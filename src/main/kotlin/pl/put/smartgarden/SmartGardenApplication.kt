@@ -1,11 +1,11 @@
-package pl.put.smartgerden
+package pl.put.smartgarden
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class SmartGerdenApplication
+class SmartGardenApplication
 
 fun main(args: Array<String>) {
-    runApplication<SmartGerdenApplication>(*args)
+    runApplication<SmartGardenApplication>(*args)
 }

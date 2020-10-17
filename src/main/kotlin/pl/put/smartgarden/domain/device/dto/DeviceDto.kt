@@ -1,4 +1,4 @@
-package pl.put.smartgerden.domain.device.dto
+package pl.put.smartgarden.domain.device.dto
 
 data class DeviceDto(
     val id: String,

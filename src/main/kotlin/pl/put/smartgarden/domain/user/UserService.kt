@@ -1,4 +1,4 @@
-package pl.put.smartgerden.domain.user
+package pl.put.smartgarden.domain.user
 
 import org.springframework.stereotype.Service
 

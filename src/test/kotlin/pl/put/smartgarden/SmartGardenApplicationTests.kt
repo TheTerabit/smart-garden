@@ -1,10 +1,10 @@
-package pl.put.smartgerden
+package pl.put.smartgarden
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class SmartGerdenApplicationTests {
+class SmartGardenApplicationTests {
 
     @Test
     fun contextLoads() {
