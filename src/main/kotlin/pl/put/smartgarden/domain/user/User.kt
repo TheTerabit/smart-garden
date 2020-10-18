@@ -1,6 +1,6 @@
-package pl.put.smartgerden.domain.user
+package pl.put.smartgarden.domain.user
 
-import pl.put.smartgerden.domain.device.Device
+import pl.put.smartgarden.domain.device.Device
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.Id

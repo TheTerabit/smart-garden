@@ -1,7 +1,7 @@
-package pl.put.smartgerden.domain.device
+package pl.put.smartgarden.domain.device
 
 import org.springframework.stereotype.Service
-import pl.put.smartgerden.domain.device.dto.DeviceDto
+import pl.put.smartgarden.domain.device.dto.DeviceDto
 
 @Service
 class DeviceFacade(
