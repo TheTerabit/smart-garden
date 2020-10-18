@@ -1,23 +1,20 @@
 package pl.put.smartgarden.domain.user
 
 import pl.put.smartgarden.domain.device.Device
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.Id
-import javax.persistence.JoinColumn
-import javax.persistence.OneToOne
-import javax.persistence.Table
+import javax.persistence.*
 
 @Entity
 @Table(name = "users")
-data class User(
+open class User {
     @Id
     @Column(name = "id")
-    val id: String,
-    val username: String,
-    val email: String,
-    val password: String,
+    @GeneratedValue
+    open var id: String? = null
+    open var username: String? = null
+    open var email: String? = null
+    open var password: String? = null
+    open var enabled: Boolean = false
     @OneToOne
     @JoinColumn(name="user_id", referencedColumnName = "id")
-    val device: Device?
-)
+    open var device: Device? = null
+}
