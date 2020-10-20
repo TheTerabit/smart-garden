@@ -83,6 +83,12 @@
             <version>0.9.1</version>
         </dependency>
 
+        <!--    MAILS    -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
         <!--    ENCRYPTED PROPERTIES    -->
         <dependency>
             <groupId>com.github.ulisesbocchio</groupId>

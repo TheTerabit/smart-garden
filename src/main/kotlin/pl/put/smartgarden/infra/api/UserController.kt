@@ -16,7 +16,8 @@ class UserController(val userService: UserService) {
     @ApiOperation("Create new user account.")
     @ApiResponses(value = [
         ApiResponse(code = 204, message = "No Content"),
-        ApiResponse(code = 400, message = "Bad request")
+        ApiResponse(code = 400, message = "Bad request"),
+        ApiResponse(code = 409, message = "Conflict")
     ])
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun signUp(@Valid @RequestBody user: UserSignUpDto) {
