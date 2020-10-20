@@ -20,5 +20,6 @@ class SwaggerConfiguration {
                 .apis(RequestHandlerSelectors.any())
                 .paths(PathSelectors.any())
                 .build()
+                .useDefaultResponseMessages(false)
     }
 }
