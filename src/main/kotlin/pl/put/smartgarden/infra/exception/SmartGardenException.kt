@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus
 /**
  * Default Smart Garden exception, other new exceptions should extend this one.
  */
-open class SmartGardenException : RuntimeException {
+open class SmartGardenException : Exception {
     val status : HttpStatus
 
     constructor() :  super(){

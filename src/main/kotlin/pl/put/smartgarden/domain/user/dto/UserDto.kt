@@ -31,7 +31,7 @@ data class UserSignInResponseDto(
 data class UserResourceDto(
         val username: String,
         val email: String,
-        val deviceGuid: String
+        val deviceGuid: String?
 )
 
 data class UserChangePasswordDto(

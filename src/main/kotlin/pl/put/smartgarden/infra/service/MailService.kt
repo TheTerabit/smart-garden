@@ -16,12 +16,13 @@ class MailService @Autowired constructor(private val javaMailSender: JavaMailSen
     /**
      * returns generated verification token.
      */
-    fun sendVerificationEmail(to: String) : String {
+    fun sendVerificationEmail(username: String, to: String): String {
         val simpleMailMessage = SimpleMailMessage()
         val token = UUID.randomUUID().toString()
 
+        // TODO Change link to something with frontend
         val confirmationUrl = "$context/user/registration-confirmation?token=$token"
-        val message = "To complete your registration click in following link:\r\n$confirmationUrl"
+        val message = "Hello $username!\nTo complete your registration click in following link:\r\n$confirmationUrl\n\nIf it wasn't you, please ignore this email."
 
         simpleMailMessage.setTo(to)
         simpleMailMessage.setSubject("SMART GARDEN Account created, confirm your email.")

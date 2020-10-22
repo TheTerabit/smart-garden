@@ -1,17 +1,21 @@
 package pl.put.smartgarden.infra.api
 
+import org.springframework.boot.web.servlet.error.ErrorController
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.stereotype.Controller
 import org.springframework.validation.FieldError
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 import pl.put.smartgarden.infra.exception.SmartGardenException
 import java.util.*
 import java.util.stream.Collectors
+import javax.servlet.http.HttpServletRequest
 
 
 @ControllerAdvice
@@ -32,10 +36,10 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
     }
 
     @ExceptionHandler(value = [(SmartGardenException::class)])
-    fun handleUserAlreadyExistsException(ex: SmartGardenException, request: WebRequest): ResponseEntity<Any> {
+    fun handleSmartGardenException(ex: SmartGardenException, request: WebRequest): ResponseEntity<Any> {
         val body: MutableMap<String, Any> = LinkedHashMap()
         body["timestamp"] = Date()
-        body["error"] = ex.message.toString()
+        body["errors"] = listOf(ex.message.toString())
         return handleExceptionInternal(ex, body, HttpHeaders.EMPTY, ex.status, request)
     }
 
@@ -43,7 +47,22 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
     fun handleAnyException(ex: Exception, request: WebRequest): ResponseEntity<Any> {
         val body: MutableMap<String, Any> = LinkedHashMap()
         body["timestamp"] = Date()
-        body["error"] = ex.message.toString()
+        body["errors"] = listOf(ex.message.toString())
         return handleExceptionInternal(ex, body, HttpHeaders.EMPTY, HttpStatus.INTERNAL_SERVER_ERROR, request)
+    }
+}
+
+@Controller
+class GlobalErrorController : ErrorController {
+    @RequestMapping("/error")
+    @Throws(Throwable::class)
+    fun handleError(request: HttpServletRequest) {
+        if (request.getAttribute("javax.servlet.error.exception") != null) {
+            throw (request.getAttribute("javax.servlet.error.exception") as Throwable)
+        }
+    }
+
+    override fun getErrorPath(): String? {
+        return null
     }
 }

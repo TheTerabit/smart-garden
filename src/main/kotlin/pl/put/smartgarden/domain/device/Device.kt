@@ -1,88 +1,94 @@
 package pl.put.smartgarden.domain.device
 
+import org.hibernate.annotations.GenericGenerator
 import java.time.Instant
-import javax.persistence.CascadeType
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.Id
-import javax.persistence.JoinColumn
-import javax.persistence.OneToMany
-import javax.persistence.Table
+import javax.persistence.*
 
 @Entity
 @Table(name = "devices")
-data class Device(
-    @Id
-    @Column(name = "id")
-    val id: String,
-    @Column(name = "user_id")
-    val userId: String?,
-    val latitude: Double?,
-    val longitude: Double?,
-    @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
-    @JoinColumn(name="device_id", referencedColumnName = "id")
-    val sensors: List<Sensor>,
-    @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
-    @JoinColumn(name="device_id", referencedColumnName = "id")
-    val groups: List<Group>
+class Device(
+        var guid: String,
+        @Column(name = "user_id")
+        var userId: String,
+        var latitude: Double,
+        var longitude: Double,
+        @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
+        @JoinColumn(name = "device_id", referencedColumnName = "id")
+        var sensors: MutableList<Sensor>,
+        @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
+        @JoinColumn(name = "device_id", referencedColumnName = "id")
+        var groups: MutableList<Group>,
+        @Id
+        @Column(name = "id")
+        @GeneratedValue(generator = "system-uuid")
+        @GenericGenerator(name = "system-uuid", strategy = "uuid")
+        var id: String? = null
 )
 
 @Entity
 @Table(name = "sensors")
-data class Sensor(
-    @Id
-    @Column(name = "id")
-    val id: String,
-    val type: String,
-    val number: Int,
-    @Column(name = "device_id")
-    val deviceId: String,
-    @Column(name = "group_id")
-    val groupId: String?,
-    @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
-    @JoinColumn(name="sensor_id", referencedColumnName = "id")
-    val measures: List<Measure>
+class Sensor(
+        var type: String,
+        var number: Int,
+        @Column(name = "device_id")
+        var deviceId: String,
+        @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
+        @JoinColumn(name = "sensor_id", referencedColumnName = "id")
+        var measures: MutableList<Measure>,
+        @Column(name = "group_id")
+        var groupId: String?,
+        @Id
+        @Column(name = "id")
+        @GeneratedValue(generator = "system-uuid")
+        @GenericGenerator(name = "system-uuid", strategy = "uuid")
+        var id: String? = null
 )
 
 @Entity
 @Table(name = "measures")
-data class Measure(
-    @Id
-    @Column(name = "id")
-    val id: String,
-    val timestamp: Instant,
-    val type: String,
-    val unit: String,
-    val value: Double,
-    @Column(name = "sensor_id")
-    val sensorId: String
+class Measure(
+        var timestamp: Instant,
+        var type: String,
+        var unit: String,
+        var value: Double,
+        @Column(name = "sensor_id")
+        var sensorId: String,
+        @Id
+        @Column(name = "id")
+        @GeneratedValue(generator = "system-uuid")
+        @GenericGenerator(name = "system-uuid", strategy = "uuid")
+        var id: String? = null
 )
 
 @Entity
 @Table(name = "groups")
-data class Group(
-    @Id
-    @Column(name = "id")
-    val id: String,
-    val settings: String,//TODO("Not yet implemented")
-    @Column(name = "device_id")
-    val deviceId: String,
-    @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
-    @JoinColumn(name="group_id", referencedColumnName = "id")
-    val sensors: List<Sensor>,
-    @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
-    @JoinColumn(name="group_id", referencedColumnName = "id")
-    val waterings: List<Watering>
+class Group(
+        var settings: String,//TODO("Not yet implemented")
+        @Column(name = "device_id")
+        var deviceId: String,
+        @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
+        @JoinColumn(name = "group_id", referencedColumnName = "id")
+        var sensors: MutableList<Sensor>,
+        @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
+        @JoinColumn(name = "group_id", referencedColumnName = "id")
+        var waterings: MutableList<Watering>,
+        @Id
+        @Column(name = "id")
+        @GeneratedValue(generator = "system-uuid")
+        @GenericGenerator(name = "system-uuid", strategy = "uuid")
+        var id: String? = null
 )
 
 @Entity
 @Table(name = "waterings")
-data class Watering(
-    @Id
-    @Column(name = "id")
-    val id: String,
-    val timestamp: Instant,
-    @Column(name = "group_id")
-    val groupId: String,
-    val planned: Boolean
+class Watering(
+        var timestamp: Instant,
+        @Column(name = "group_id")
+        var groupId: String,
+        var planned: Boolean,
+        @Id
+        @Column(name = "id")
+        @GeneratedValue(generator = "system-uuid")
+        @GenericGenerator(name = "system-uuid", strategy = "uuid")
+        var id: String? = null
 )

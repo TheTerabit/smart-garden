@@ -24,7 +24,7 @@ class UserController(val userService: UserService) {
         userService.signUpUser(user)
     }
 
-    @PostMapping("/sign-up/confirmation")
+    @GetMapping("/sign-up/confirmation")
     @ApiOperation("Confirm account creation (link sent to email).")
     @ApiResponses(value = [
         ApiResponse(code = 204, message = "No Content"),
@@ -33,18 +33,19 @@ class UserController(val userService: UserService) {
     @ApiParam(value = "token", required = true)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun signUpConfirmation(@RequestParam token : String) {
-
+        userService.enableUserIfValid(token)
     }
 
     @PostMapping("/sign-in")
     @ApiOperation("Sign in and get JWT.")
     @ApiResponses(value = [
         ApiResponse(code = 200, message = "OK"),
-        ApiResponse(code = 400, message = "Bad request")
+        ApiResponse(code = 400, message = "Bad request"),
+        ApiResponse(code = 403, message = "Unactivated")
     ])
     @ResponseStatus(HttpStatus.OK)
     fun signIn(@RequestBody user: UserSignInDto) : UserSignInResponseDto{
-        return UserSignInResponseDto("jgdsgfgfgdfgadsfgergre325r5y4hbdzfs.b3twfersv", "nazwauzytkownika", "124324edfef324")
+        return userService.signIn(user)
     }
 
     @GetMapping
@@ -66,6 +67,7 @@ class UserController(val userService: UserService) {
     ])
     @ResponseStatus(HttpStatus.OK)
     fun getUser(@PathVariable id : String) : UserResourceDto {
+        // TODO Only if it is needed
         return UserResourceDto("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
     }
 
@@ -77,8 +79,8 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 404, message = "Not found")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun getCurrentUser() : UserResourceDto {
-        return UserResourceDto("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
+    fun getCurrentUser(@RequestHeader("Authorization") token : String) : UserResourceDto {
+        return userService.getCurrentUser(token)
     }
 
     @PutMapping("/me/change-password")
@@ -90,6 +92,7 @@ class UserController(val userService: UserService) {
     ])
     @ResponseStatus(HttpStatus.OK)
     fun changePassword(@RequestBody user: UserChangePasswordDto) : UserResourceDto{
+        // TODO
         return UserResourceDto("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
     }
 
@@ -102,6 +105,7 @@ class UserController(val userService: UserService) {
     ])
     @ResponseStatus(HttpStatus.OK)
     fun changeEmail(@RequestBody user: UserChangeEmailDto) : UserResourceDto {
+        // TODO
         return UserResourceDto("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
 
     }
@@ -115,6 +119,7 @@ class UserController(val userService: UserService) {
     ])
     @ResponseStatus(HttpStatus.OK)
     fun changeUsername(@RequestBody user: UserChangeUsernameDto) : UserResourceDto {
+        // TODO
         return UserResourceDto("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
     }
 }
