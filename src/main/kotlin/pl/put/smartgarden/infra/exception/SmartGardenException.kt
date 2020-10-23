@@ -5,10 +5,10 @@ import org.springframework.http.HttpStatus
 /**
  * Default Smart Garden exception, other new exceptions should extend this one.
  */
-open class SmartGardenException : Exception {
-    val status : HttpStatus
+open class SmartGardenException : RuntimeException {
+    val status: HttpStatus
 
-    constructor() :  super(){
+    constructor() : super() {
         this.status = HttpStatus.NOT_FOUND
     }
 

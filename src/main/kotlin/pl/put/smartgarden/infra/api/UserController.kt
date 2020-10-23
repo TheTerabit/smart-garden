@@ -1,10 +1,28 @@
 package pl.put.smartgarden.infra.api
 
-import io.swagger.annotations.*
+import io.swagger.annotations.Api
+import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiParam
+import io.swagger.annotations.ApiResponse
+import io.swagger.annotations.ApiResponses
 import org.springframework.http.HttpStatus
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseStatus
+import org.springframework.web.bind.annotation.RestController
 import pl.put.smartgarden.domain.user.UserService
-import pl.put.smartgarden.domain.user.dto.*
+import pl.put.smartgarden.domain.user.dto.UserChangeEmailDto
+import pl.put.smartgarden.domain.user.dto.UserChangePasswordDto
+import pl.put.smartgarden.domain.user.dto.UserChangeUsernameDto
+import pl.put.smartgarden.domain.user.dto.UserResourceDto
+import pl.put.smartgarden.domain.user.dto.UserSignInDto
+import pl.put.smartgarden.domain.user.dto.UserSignInResponseDto
+import pl.put.smartgarden.domain.user.dto.UserSignUpDto
 import javax.validation.Valid
 
 @Api(description = "Users api")
@@ -12,7 +30,7 @@ import javax.validation.Valid
 @RequestMapping("/users")
 class UserController(val userService: UserService) {
 
-    @PostMapping("/sign-up")
+    @PostMapping
     @ApiOperation("Create new user account.")
     @ApiResponses(value = [
         ApiResponse(code = 204, message = "No Content"),
@@ -20,11 +38,9 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 409, message = "Conflict")
     ])
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun signUp(@Valid @RequestBody user: UserSignUpDto) {
-        userService.signUpUser(user)
-    }
+    fun signUp(@Valid @RequestBody user: UserSignUpDto) = userService.signUpUser(user)
 
-    @GetMapping("/sign-up/confirmation")
+    @GetMapping("/sign-up-confirmation")
     @ApiOperation("Confirm account creation (link sent to email).")
     @ApiResponses(value = [
         ApiResponse(code = 204, message = "No Content"),
@@ -32,11 +48,9 @@ class UserController(val userService: UserService) {
     ])
     @ApiParam(value = "token", required = true)
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun signUpConfirmation(@RequestParam token : String) {
-        userService.enableUserIfValid(token)
-    }
+    fun signUpConfirmation(@RequestParam token: String) = userService.enableUserIfValid(token)
 
-    @PostMapping("/sign-in")
+    @PostMapping("/login")
     @ApiOperation("Sign in and get JWT.")
     @ApiResponses(value = [
         ApiResponse(code = 200, message = "OK"),
@@ -44,9 +58,7 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 403, message = "Unactivated")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun signIn(@RequestBody user: UserSignInDto) : UserSignInResponseDto{
-        return userService.signIn(user)
-    }
+    fun signIn(@RequestBody user: UserSignInDto): UserSignInResponseDto = userService.signIn(user)
 
     @GetMapping
     @ApiOperation("Get all users.")
@@ -58,19 +70,6 @@ class UserController(val userService: UserService) {
     @ResponseStatus(HttpStatus.OK)
     fun getUsers(): List<UserResourceDto> = userService.getUsers()
 
-    @GetMapping("/{id}")
-    @ApiOperation("Get one user details.")
-    @ApiResponses(value = [
-        ApiResponse(code = 200, message = "OK"),
-        ApiResponse(code = 400, message = "Bad request"),
-        ApiResponse(code = 404, message = "Not found")
-    ])
-    @ResponseStatus(HttpStatus.OK)
-    fun getUser(@PathVariable id : String) : UserResourceDto {
-        // TODO Only if it is needed
-        return UserResourceDto("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
-    }
-
     @GetMapping("/me")
     @ApiOperation("Get currently logged user details.")
     @ApiResponses(value = [
@@ -79,9 +78,8 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 404, message = "Not found")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun getCurrentUser(@RequestHeader("Authorization") token : String) : UserResourceDto {
-        return userService.getCurrentUser(token)
-    }
+    fun getCurrentUser(@RequestHeader("Authorization") token: String): UserResourceDto =
+        userService.getCurrentUser(token)
 
     @PutMapping("/me/change-password")
     @ApiOperation("Change currently logged user password.")
@@ -91,7 +89,7 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 404, message = "Not found")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun changePassword(@RequestBody user: UserChangePasswordDto) : UserResourceDto{
+    fun changePassword(@RequestBody user: UserChangePasswordDto): UserResourceDto {
         // TODO
         return UserResourceDto("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
     }
@@ -104,10 +102,9 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 404, message = "Not found")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun changeEmail(@RequestBody user: UserChangeEmailDto) : UserResourceDto {
+    fun changeEmail(@RequestBody user: UserChangeEmailDto): UserResourceDto {
         // TODO
         return UserResourceDto("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
-
     }
 
     @PutMapping("/me/change-username")
@@ -118,7 +115,7 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 404, message = "Not found")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun changeUsername(@RequestBody user: UserChangeUsernameDto) : UserResourceDto {
+    fun changeUsername(@RequestBody user: UserChangeUsernameDto): UserResourceDto {
         // TODO
         return UserResourceDto("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
     }

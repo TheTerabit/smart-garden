@@ -15,9 +15,7 @@ class DeviceResource(
     val deviceFacade: DeviceFacade
 ) {
     @PostMapping
-    fun createDevice(@RequestBody deviceDto: DeviceDto) {
-        deviceFacade.createDevice(deviceDto)
-    }
+    fun createDevice(@RequestBody deviceDto: DeviceDto) = deviceFacade.createDevice(deviceDto)
 
     @GetMapping
     fun getDevices(): List<Device> = deviceFacade.getDevices()

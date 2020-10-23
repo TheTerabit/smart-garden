@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.mail.SimpleMailMessage
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.stereotype.Service
-import java.util.*
+import java.util.UUID
 
 @Service
 class MailService @Autowired constructor(private val javaMailSender: JavaMailSender) {
@@ -21,7 +21,7 @@ class MailService @Autowired constructor(private val javaMailSender: JavaMailSen
         val token = UUID.randomUUID().toString()
 
         // TODO Change link to something with frontend
-        val confirmationUrl = "$context/user/registration-confirmation?token=$token"
+        val confirmationUrl = "$context/users/sign-up-confirmation?token=$token"
         val message = "Hello $username!\nTo complete your registration click in following link:\r\n$confirmationUrl\n\nIf it wasn't you, please ignore this email."
 
         simpleMailMessage.setTo(to)

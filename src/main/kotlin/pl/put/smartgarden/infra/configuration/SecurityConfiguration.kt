@@ -12,9 +12,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer
-import org.springframework.stereotype.Component
-import org.springframework.web.filter.DelegatingFilterProxy
 import pl.put.smartgarden.infra.exception.SmartGardenException
 import javax.servlet.Filter
 import javax.servlet.FilterChain
@@ -30,18 +27,16 @@ class SecurityConfigurationn : WebSecurityConfigurerAdapter() {
 
     override fun configure(http: HttpSecurity) {
         http.csrf().disable()
-                .authorizeRequests()
-                .antMatchers("/*")
-                .permitAll()
+            .authorizeRequests()
+            .antMatchers("/*")
+            .permitAll()
     }
 
     @Bean
-    fun passwordEncoder(): BCryptPasswordEncoder? {
-        return BCryptPasswordEncoder()
-    }
+    fun passwordEncoder(): BCryptPasswordEncoder? = BCryptPasswordEncoder()
 
     @Bean
-    fun filterRegistrationBean(filter : JwtFilter): FilterRegistrationBean<Filter> {
+    fun filterRegistrationBean(filter: JwtFilter): FilterRegistrationBean<Filter> {
         val filterRegistrationBean = FilterRegistrationBean<Filter>()
         filterRegistrationBean.filter = filter
         filterRegistrationBean.urlPatterns = listOf("/users/me", "/users/me/*")
@@ -49,9 +44,7 @@ class SecurityConfigurationn : WebSecurityConfigurerAdapter() {
     }
 
     @Bean
-    fun filter() : JwtFilter {
-        return JwtFilter()
-    }
+    fun filter(): JwtFilter = JwtFilter()
 }
 
 class JwtFilter : Filter {
@@ -66,15 +59,19 @@ class JwtFilter : Filter {
         if (header == null || !header.startsWith("Bearer ")) {
             throw SmartGardenException("Missing or invalid Authorization header", HttpStatus.UNAUTHORIZED)
         } else {
-            try {
-                val token = header.substring(7)
-                val claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).body
-                servletRequest.setAttribute("claims", claims)
-            } catch (e: SignatureException) {
-                throw SmartGardenException("Invalid token", HttpStatus.UNAUTHORIZED)
-            }
+            setServletRequestClaims(header, servletRequest)
         }
 
         filterChain.doFilter(servletRequest, servletResponse)
+    }
+
+    private fun setServletRequestClaims(header: String, servletRequest: ServletRequest) {
+        try {
+            val token = header.substring(7)
+            val claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).body
+            servletRequest.setAttribute("claims", claims)
+        } catch (e: SignatureException) {
+            throw SmartGardenException("Invalid token", HttpStatus.UNAUTHORIZED)
+        }
     }
 }

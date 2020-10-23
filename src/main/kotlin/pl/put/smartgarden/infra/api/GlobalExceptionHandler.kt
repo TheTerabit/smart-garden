@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 import pl.put.smartgarden.infra.exception.SmartGardenException
-import java.util.*
+import java.util.Date
+import java.util.LinkedHashMap
 import java.util.stream.Collectors
 import javax.servlet.http.HttpServletRequest
 
@@ -21,16 +22,19 @@ import javax.servlet.http.HttpServletRequest
 @ControllerAdvice
 class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
 
-    override fun handleMethodArgumentNotValid(ex: MethodArgumentNotValidException,
-                                              headers: HttpHeaders,
-                                              status: HttpStatus, request: WebRequest): ResponseEntity<Any?> {
+    override fun handleMethodArgumentNotValid(
+        ex: MethodArgumentNotValidException,
+        headers: HttpHeaders,
+        status: HttpStatus,
+        request: WebRequest
+    ): ResponseEntity<Any?> {
         val body: MutableMap<String, Any> = LinkedHashMap()
         body["timestamp"] = Date()
         val errors = ex.bindingResult
-                .fieldErrors
-                .stream()
-                .map { x: FieldError -> x.defaultMessage }
-                .collect(Collectors.toList())
+            .fieldErrors
+            .stream()
+            .map { x: FieldError -> x.defaultMessage }
+            .collect(Collectors.toList())
         body["errors"] = errors
         return ResponseEntity(body, headers, status)
     }
@@ -62,7 +66,5 @@ class GlobalErrorController : ErrorController {
         }
     }
 
-    override fun getErrorPath(): String? {
-        return null
-    }
+    override fun getErrorPath(): String? = null
 }
