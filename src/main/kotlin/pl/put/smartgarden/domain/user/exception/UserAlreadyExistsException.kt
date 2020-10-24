@@ -1,6 +1,7 @@
-package pl.put.smartgarden.infra.exception
+package pl.put.smartgarden.domain.user.exception
 
 import org.springframework.http.HttpStatus
+import pl.put.smartgarden.domain.SmartGardenException
 
 class UserAlreadyExistsException : SmartGardenException {
     constructor() : super()

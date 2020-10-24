@@ -24,13 +24,14 @@ class Device(
     var sensors: MutableList<Sensor>,
     @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
     @JoinColumn(name = "device_id", referencedColumnName = "id")
-    var groups: MutableList<Group>,
+    var groups: MutableList<Group>
+) {
     @Id
     @Column(name = "id")
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    var id: String? = null
-)
+    lateinit var id: String
+}
 
 @Entity
 @Table(name = "sensors")
@@ -43,13 +44,14 @@ class Sensor(
     @JoinColumn(name = "sensor_id", referencedColumnName = "id")
     var measures: MutableList<Measure>,
     @Column(name = "group_id")
-    var groupId: String?,
+    var groupId: String?
+) {
     @Id
     @Column(name = "id")
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    var id: String? = null
-)
+    lateinit var id: String
+}
 
 @Entity
 @Table(name = "measures")
@@ -59,13 +61,14 @@ class Measure(
     var unit: String,
     var value: Double,
     @Column(name = "sensor_id")
-    var sensorId: String,
+    var sensorId: String
+) {
     @Id
     @Column(name = "id")
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    var id: String? = null
-)
+    lateinit var id: String
+}
 
 @Entity
 @Table(name = "groups")
@@ -78,13 +81,14 @@ class Group(
     var sensors: MutableList<Sensor>,
     @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
     @JoinColumn(name = "group_id", referencedColumnName = "id")
-    var waterings: MutableList<Watering>,
+    var waterings: MutableList<Watering>
+) {
     @Id
     @Column(name = "id")
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    var id: String? = null
-)
+    lateinit var id: String
+}
 
 @Entity
 @Table(name = "waterings")
@@ -92,10 +96,11 @@ class Watering(
     var timestamp: Instant,
     @Column(name = "group_id")
     var groupId: String,
-    var planned: Boolean,
+    var planned: Boolean
+) {
     @Id
     @Column(name = "id")
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    var id: String? = null
-)
+    lateinit var id: String
+}

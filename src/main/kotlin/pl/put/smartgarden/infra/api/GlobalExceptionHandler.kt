@@ -12,10 +12,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
-import pl.put.smartgarden.infra.exception.SmartGardenException
+import pl.put.smartgarden.domain.SmartGardenException
 import java.util.Date
 import java.util.LinkedHashMap
-import java.util.stream.Collectors
 import javax.servlet.http.HttpServletRequest
 
 
@@ -32,9 +31,7 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
         body["timestamp"] = Date()
         val errors = ex.bindingResult
             .fieldErrors
-            .stream()
             .map { x: FieldError -> x.defaultMessage }
-            .collect(Collectors.toList())
         body["errors"] = errors
         return ResponseEntity(body, headers, status)
     }

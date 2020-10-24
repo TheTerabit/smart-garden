@@ -50,7 +50,7 @@ class UserController(val userService: UserService) {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun signUpConfirmation(@RequestParam token: String) = userService.enableUserIfValid(token)
 
-    @PostMapping("/login")
+    @PutMapping("/login")
     @ApiOperation("Sign in and get JWT.")
     @ApiResponses(value = [
         ApiResponse(code = 200, message = "OK"),

@@ -1,4 +1,4 @@
-package pl.put.smartgarden.infra.exception
+package pl.put.smartgarden.domain
 
 import org.springframework.http.HttpStatus
 

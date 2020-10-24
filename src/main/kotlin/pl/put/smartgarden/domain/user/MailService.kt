@@ -1,4 +1,4 @@
-package pl.put.smartgarden.infra.service
+package pl.put.smartgarden.domain.user
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value

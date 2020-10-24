@@ -20,13 +20,14 @@ class User(
     var enabled: Boolean,
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    var device: Device? = null,
+    var device: Device? = null
+) {
     @Id
     @Column(name = "id")
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    val id: String? = null
-)
+    lateinit var id: String
+}
 
 @Entity
 @Table(name = "VerificationTokens")
@@ -34,9 +35,10 @@ class VerificationToken(
     var token: String,
     @OneToOne(targetEntity = User::class, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
-    open var user: User,
+    open var user: User
+) {
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    var id: String? = null
-)
+    lateinit var id: String
+}

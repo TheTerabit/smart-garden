@@ -12,7 +12,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import pl.put.smartgarden.infra.exception.SmartGardenException
+import pl.put.smartgarden.domain.SmartGardenException
 import javax.servlet.Filter
 import javax.servlet.FilterChain
 import javax.servlet.ServletRequest
@@ -52,7 +52,6 @@ class JwtFilter : Filter {
     @Value("\${jwt-secret-key}")
     lateinit var secretKey: String
 
-    @Throws(SmartGardenException::class)
     override fun doFilter(servletRequest: ServletRequest, servletResponse: ServletResponse, filterChain: FilterChain) {
         val httpServletRequest = servletRequest as HttpServletRequest
         val header = httpServletRequest.getHeader("authorization")
