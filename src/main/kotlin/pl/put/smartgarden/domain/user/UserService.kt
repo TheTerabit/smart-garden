@@ -13,7 +13,7 @@ import pl.put.smartgarden.domain.user.dto.UserSignInDto
 import pl.put.smartgarden.domain.user.dto.UserSignInResponseDto
 import pl.put.smartgarden.domain.user.dto.UserSignUpDto
 import pl.put.smartgarden.domain.SmartGardenException
-import pl.put.smartgarden.domain.device.Sensor
+import pl.put.smartgarden.domain.device.response.SensorResponse
 import pl.put.smartgarden.domain.user.dto.AreaDto
 import pl.put.smartgarden.domain.user.dto.AreaSettingsDto
 import pl.put.smartgarden.domain.user.dto.IrrigationLevelDto
@@ -22,6 +22,8 @@ import pl.put.smartgarden.domain.user.dto.LocationDto
 import pl.put.smartgarden.domain.user.dto.MeasuresDto
 import pl.put.smartgarden.domain.user.dto.NextIrrigationDto
 import pl.put.smartgarden.domain.user.exception.UserAlreadyExistsException
+import pl.put.smartgarden.domain.user.repository.UserRepository
+import pl.put.smartgarden.domain.user.repository.VerificationTokenRepository
 import java.time.Instant
 import java.util.Date
 
@@ -163,7 +165,7 @@ class UserService(
         TODO("Not yet implemented")
     }
 
-    fun getNotLinkedSensors(token: String): List<Sensor> {
+    fun getNotLinkedSensors(token: String): List<SensorResponse> {
         TODO("Not yet implemented")
     }
 }

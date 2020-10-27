@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-import pl.put.smartgarden.domain.device.Sensor
+import pl.put.smartgarden.domain.device.response.SensorResponse
 import pl.put.smartgarden.domain.user.UserService
 import pl.put.smartgarden.domain.user.dto.AreaDto
 import pl.put.smartgarden.domain.user.dto.AreaSettingsDto
@@ -252,7 +252,6 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 403, message = "Unactivated")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun getNotLinkedSensors(@RequestHeader("Authorization") token: String): List<Sensor> =
+    fun getNotLinkedSensors(@RequestHeader("Authorization") token: String): List<SensorResponse> =
         userService.getNotLinkedSensors(token)
-
 }

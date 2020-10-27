@@ -15,7 +15,8 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import pl.put.smartgarden.domain.device.Device
 import pl.put.smartgarden.domain.device.DeviceFacade
-import pl.put.smartgarden.domain.device.Measure
+import pl.put.smartgarden.domain.device.response.DeviceResponse
+import pl.put.smartgarden.domain.device.response.MeasureResponse
 import pl.put.smartgarden.domain.device.dto.DeviceDto
 import pl.put.smartgarden.domain.device.dto.DeviceMeasuresDto
 
@@ -33,16 +34,16 @@ class DeviceController(
         ApiResponse(code = 409, message = "Conflict")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun createOrUpdateDevice(@RequestBody deviceDto: DeviceDto): Device = deviceFacade.createOrUpdateDevice(deviceDto)
+    fun createOrUpdateDevice(@RequestBody deviceDto: DeviceDto): DeviceResponse = deviceFacade.createOrUpdateDevice(deviceDto)
 
-    @PostMapping("/measures")
+    @PostMapping("/{id}/measures")
     @ApiOperation("Save new measures from device.")
     @ApiResponses(value = [
         ApiResponse(code = 200, message = "OK"),
         ApiResponse(code = 400, message = "Bad request")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun createMeasures(@RequestBody deviceMeasuresDto: DeviceMeasuresDto): List<Measure> = deviceFacade.createMeasures(deviceMeasuresDto)
+    fun createMeasures(@RequestBody deviceMeasuresDto: DeviceMeasuresDto): List<MeasureResponse> = deviceFacade.createMeasures(deviceMeasuresDto)
 
     @GetMapping("/irrigation-decisions")
     @ApiOperation("Get decision which areas should be irrigated.")
@@ -51,9 +52,8 @@ class DeviceController(
         ApiResponse(code = 400, message = "Bad request")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun getIrrigationDecisions(@RequestParam("secret") secret: String): List<Measure> = deviceFacade.getIrrigationDecisions(secret)
+    fun getIrrigationDecisions(@RequestParam("secret") secret: String): List<MeasureResponse> = deviceFacade.getIrrigationDecisions(secret)
 
     @GetMapping
     fun getDevices(): List<Device> = deviceFacade.getDevices()
-
 }

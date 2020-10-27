@@ -3,6 +3,8 @@ package pl.put.smartgarden.domain.device
 import org.springframework.stereotype.Service
 import pl.put.smartgarden.domain.device.dto.DeviceDto
 import pl.put.smartgarden.domain.device.dto.DeviceMeasuresDto
+import pl.put.smartgarden.domain.device.response.DeviceResponse
+import pl.put.smartgarden.domain.device.response.MeasureResponse
 
 @Service
 class DeviceFacade(
@@ -10,7 +12,7 @@ class DeviceFacade(
     val sensorService: SensorService
 ) {
 
-    fun createOrUpdateDevice(deviceDto: DeviceDto): Device {
+    fun createOrUpdateDevice(deviceDto: DeviceDto): DeviceResponse {
         deviceService.createDevice()
         sensorService.createSensors()
         TODO()
@@ -18,11 +20,11 @@ class DeviceFacade(
 
     fun getDevices(): List<Device> = deviceService.getDevices()
 
-    fun createMeasures(deviceMeasuresDto: DeviceMeasuresDto): List<Measure> {
+    fun createMeasures(deviceMeasuresDto: DeviceMeasuresDto): List<MeasureResponse> {
         TODO("Not yet implemented")
     }
 
-    fun getIrrigationDecisions(secret: String): List<Measure> {
+    fun getIrrigationDecisions(secret: String): List<MeasureResponse> {
         TODO("Not yet implemented")
     }
 }
