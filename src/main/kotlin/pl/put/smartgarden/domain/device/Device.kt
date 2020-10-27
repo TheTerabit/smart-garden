@@ -24,7 +24,7 @@ class Device(
     var sensors: MutableList<Sensor>,
     @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
     @JoinColumn(name = "device_id", referencedColumnName = "id")
-    var groups: MutableList<Group>
+    var areas: MutableList<Area>
 ) {
     @Id
     @Column(name = "id")
@@ -43,8 +43,8 @@ class Sensor(
     @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
     @JoinColumn(name = "sensor_id", referencedColumnName = "id")
     var measures: MutableList<Measure>,
-    @Column(name = "group_id")
-    var groupId: String?
+    @Column(name = "area_id")
+    var areaId: String?
 ) {
     @Id
     @Column(name = "id")
@@ -71,17 +71,17 @@ class Measure(
 }
 
 @Entity
-@Table(name = "groups")
-class Group(
+@Table(name = "areas")
+class Area(
     var settings: String,//TODO("Not yet implemented")
     @Column(name = "device_id")
     var deviceId: String,
     @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
-    @JoinColumn(name = "group_id", referencedColumnName = "id")
+    @JoinColumn(name = "area_id", referencedColumnName = "id")
     var sensors: MutableList<Sensor>,
     @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
-    @JoinColumn(name = "group_id", referencedColumnName = "id")
-    var waterings: MutableList<Watering>
+    @JoinColumn(name = "area_id", referencedColumnName = "id")
+    var irrigations: MutableList<Irrigation>
 ) {
     @Id
     @Column(name = "id")
@@ -91,11 +91,11 @@ class Group(
 }
 
 @Entity
-@Table(name = "waterings")
-class Watering(
+@Table(name = "irrigations")
+class Irrigation(
     var timestamp: Instant,
-    @Column(name = "group_id")
-    var groupId: String,
+    @Column(name = "area_id")
+    var areaId: String,
     var planned: Boolean
 ) {
     @Id
