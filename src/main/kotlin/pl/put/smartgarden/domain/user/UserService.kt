@@ -13,7 +13,16 @@ import pl.put.smartgarden.domain.user.dto.UserSignInDto
 import pl.put.smartgarden.domain.user.dto.UserSignInResponseDto
 import pl.put.smartgarden.domain.user.dto.UserSignUpDto
 import pl.put.smartgarden.domain.SmartGardenException
+import pl.put.smartgarden.domain.device.Sensor
+import pl.put.smartgarden.domain.user.dto.AreaDto
+import pl.put.smartgarden.domain.user.dto.AreaSettingsDto
+import pl.put.smartgarden.domain.user.dto.IrrigationLevelDto
+import pl.put.smartgarden.domain.user.dto.IrrigationTimeDto
+import pl.put.smartgarden.domain.user.dto.LocationDto
+import pl.put.smartgarden.domain.user.dto.MeasuresDto
+import pl.put.smartgarden.domain.user.dto.NextIrrigationDto
 import pl.put.smartgarden.domain.user.exception.UserAlreadyExistsException
+import java.time.Instant
 import java.util.Date
 
 
@@ -120,5 +129,41 @@ class UserService(
             .setIssuedAt(Date(now))
             .signWith(SignatureAlgorithm.HS512, secretKey)
             .compact()
+    }
+
+    fun getAreaMeasures(token: String, areaId: String, from: Instant, to: Instant): MeasuresDto {
+        TODO("Not yet implemented")
+    }
+
+    fun setIrrigationLevel(token: String, areaId: String, irrigationLevelDto: IrrigationLevelDto): AreaSettingsDto {
+        TODO("Not yet implemented")
+    }
+
+    fun getAreasSetting(token: String): List<AreaSettingsDto> {
+        TODO("Not yet implemented")
+    }
+
+    fun setLocation(token: String, locationDto: LocationDto): UserResourceDto {
+        TODO("Not yet implemented")
+    }
+
+    fun setNextIrrigationTime(token: String, areaId: String, irrigationTimeDto: IrrigationTimeDto): NextIrrigationDto {
+        TODO("Not yet implemented")
+    }
+
+    fun irrigateArea(token: String, areaId: String) {
+        TODO("Not yet implemented")
+    }
+
+    fun linkSensorToArea(token: String, areaId: String, sensorId: String): List<AreaDto> {
+        TODO("Not yet implemented")
+    }
+
+    fun unlinkSensorFromArea(token: String, sensorId: String): List<AreaDto> {
+        TODO("Not yet implemented")
+    }
+
+    fun getNotLinkedSensors(token: String): List<Sensor> {
+        TODO("Not yet implemented")
     }
 }
