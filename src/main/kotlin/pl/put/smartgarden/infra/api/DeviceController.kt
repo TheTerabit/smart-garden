@@ -9,16 +9,17 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import pl.put.smartgarden.domain.device.Device
 import pl.put.smartgarden.domain.device.DeviceFacade
-import pl.put.smartgarden.domain.device.response.DeviceResponse
 import pl.put.smartgarden.domain.device.response.MeasureResponse
-import pl.put.smartgarden.domain.device.dto.DeviceDto
-import pl.put.smartgarden.domain.device.dto.DeviceMeasuresDto
+import pl.put.smartgarden.domain.device.dto.MeasureDto
+import pl.put.smartgarden.domain.device.dto.SensorDto
+import pl.put.smartgarden.domain.device.response.AreaDecisionResponse
+import pl.put.smartgarden.domain.device.response.SensorResponse
 
 @Api(description = "Devices api")
 @RestController
@@ -34,7 +35,8 @@ class DeviceController(
         ApiResponse(code = 409, message = "Conflict")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun createOrUpdateDevice(@RequestBody deviceDto: DeviceDto): DeviceResponse = deviceFacade.createOrUpdateDevice(deviceDto)
+    fun createOrUpdateDevice(@RequestBody sensors: List<SensorDto>): List<SensorResponse> =
+        deviceFacade.createOrUpdateDevice(sensors)
 
     @PostMapping("/{id}/measures")
     @ApiOperation("Save new measures from device.")
@@ -43,7 +45,11 @@ class DeviceController(
         ApiResponse(code = 400, message = "Bad request")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun createMeasures(@RequestBody deviceMeasuresDto: DeviceMeasuresDto): List<MeasureResponse> = deviceFacade.createMeasures(deviceMeasuresDto)
+    fun createMeasures(
+        @RequestBody deviceMeasures: List<MeasureDto>,
+        @RequestHeader("Authorization") token: String
+    ): List<MeasureResponse> =
+        deviceFacade.createMeasures(deviceMeasures, token)
 
     @GetMapping("/irrigation-decisions")
     @ApiOperation("Get decision which areas should be irrigated.")
@@ -52,7 +58,8 @@ class DeviceController(
         ApiResponse(code = 400, message = "Bad request")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun getIrrigationDecisions(@RequestParam("secret") secret: String): List<MeasureResponse> = deviceFacade.getIrrigationDecisions(secret)
+    fun getIrrigationDecisions(@RequestHeader("Authorization") token: String): List<AreaDecisionResponse> =
+        deviceFacade.getIrrigationDecisions(token)
 
     @GetMapping
     fun getDevices(): List<Device> = deviceFacade.getDevices()

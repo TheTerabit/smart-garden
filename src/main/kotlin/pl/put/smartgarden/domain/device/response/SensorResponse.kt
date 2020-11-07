@@ -1,5 +1,6 @@
 package pl.put.smartgarden.domain.device.response
 
-class SensorResponse {
-
-}
+data class SensorResponse(
+    val id: String,
+    val guid: String
+)
