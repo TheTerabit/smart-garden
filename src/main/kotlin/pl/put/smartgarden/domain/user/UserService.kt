@@ -13,13 +13,12 @@ import pl.put.smartgarden.domain.user.dto.UserSignInDto
 import pl.put.smartgarden.domain.user.dto.UserSignInResponseDto
 import pl.put.smartgarden.domain.user.dto.UserSignUpDto
 import pl.put.smartgarden.domain.SmartGardenException
+import pl.put.smartgarden.domain.device.dto.MeasureDto
 import pl.put.smartgarden.domain.device.response.SensorResponse
 import pl.put.smartgarden.domain.user.dto.AreaDto
 import pl.put.smartgarden.domain.user.dto.AreaSettingsDto
 import pl.put.smartgarden.domain.user.dto.IrrigationLevelDto
-import pl.put.smartgarden.domain.user.dto.IrrigationTimeDto
 import pl.put.smartgarden.domain.user.dto.LocationDto
-import pl.put.smartgarden.domain.user.dto.MeasuresDto
 import pl.put.smartgarden.domain.user.dto.NextIrrigationDto
 import pl.put.smartgarden.domain.user.exception.UserAlreadyExistsException
 import pl.put.smartgarden.domain.user.repository.UserRepository
@@ -133,7 +132,7 @@ class UserService(
             .compact()
     }
 
-    fun getAreaMeasures(token: String, areaId: String, from: Instant, to: Instant): MeasuresDto {
+    fun getAreaMeasures(token: String, areaId: String, from: Instant, to: Instant): List<MeasureDto> {
         TODO("Not yet implemented")
     }
 
@@ -149,7 +148,7 @@ class UserService(
         TODO("Not yet implemented")
     }
 
-    fun setNextIrrigationTime(token: String, areaId: String, irrigationTimeDto: IrrigationTimeDto): NextIrrigationDto {
+    fun setNextIrrigationTime(token: String, areaId: String, irrigationTimeDto: NextIrrigationDto): NextIrrigationDto {
         TODO("Not yet implemented")
     }
 

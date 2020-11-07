@@ -16,14 +16,13 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import pl.put.smartgarden.domain.device.dto.MeasureDto
 import pl.put.smartgarden.domain.device.response.SensorResponse
 import pl.put.smartgarden.domain.user.UserService
 import pl.put.smartgarden.domain.user.dto.AreaDto
 import pl.put.smartgarden.domain.user.dto.AreaSettingsDto
 import pl.put.smartgarden.domain.user.dto.IrrigationLevelDto
-import pl.put.smartgarden.domain.user.dto.IrrigationTimeDto
 import pl.put.smartgarden.domain.user.dto.LocationDto
-import pl.put.smartgarden.domain.user.dto.MeasuresDto
 import pl.put.smartgarden.domain.user.dto.NextIrrigationDto
 import pl.put.smartgarden.domain.user.dto.UserChangeEmailDto
 import pl.put.smartgarden.domain.user.dto.UserChangePasswordDto
@@ -143,7 +142,7 @@ class UserController(val userService: UserService) {
         @PathVariable("areaId") areaId: String,
         @RequestParam("from", required = false) from: Instant,
         @RequestParam("to", required = false) to: Instant
-    ): MeasuresDto =
+    ): List<MeasureDto> =
         userService.getAreaMeasures(token, areaId, from, to)
 
     @PutMapping("/areas/{areaId}/irrigation-level")
@@ -196,7 +195,7 @@ class UserController(val userService: UserService) {
     @ResponseStatus(HttpStatus.OK)
     fun setNextIrrigationTime(
         @RequestHeader("Authorization") token: String,
-        @RequestBody irrigationTimeDto: IrrigationTimeDto,
+        @RequestBody irrigationTimeDto: NextIrrigationDto,
         @PathVariable("areaId") areaId: String
     ): NextIrrigationDto =
         userService.setNextIrrigationTime(token, areaId, irrigationTimeDto)
