@@ -1,11 +1,11 @@
-package pl.put.smartgarden.domain.user.dto
+package pl.put.smartgarden.domain.user.dto.request
 
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.Pattern
 import javax.validation.constraints.Size
 
-data class UserSignUpDto(
+data class UserSignUpRequest(
     @field:Size(min = 3, max = 25, message = "{validation.user.username.min}")
     @field:Pattern(regexp = "^[a-zA-Z]+$", message = "{validation.user.username.letters}")
     val username: String,
@@ -16,35 +16,35 @@ data class UserSignUpDto(
     val password: String
 )
 
-data class UserSignInDto(
+data class UserSignInRequest(
     val email: String,
     val password: String
 )
 
-data class UserSignInResponseDto(
+data class UserSignInResponseRequest(
     val token: String,
     val username: String,
     val id: String
 )
 
-data class UserResourceDto(
+data class UserResourceRequest(
     val username: String,
     val email: String,
     val deviceGuid: String?
 )
 
-data class UserChangePasswordDto(
+data class UserChangePasswordRequest(
     val oldPassword: String,
     val password: String,
     val passwordRepeated: String
 )
 
-data class UserChangeEmailDto(
+data class UserChangeEmailRequest(
     val password: String,
     val email: String
 )
 
-data class UserChangeUsernameDto(
+data class UserChangeUsernameRequest(
     val password: String,
     val username: String
 )

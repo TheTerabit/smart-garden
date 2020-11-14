@@ -8,19 +8,18 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
-import pl.put.smartgarden.domain.user.dto.UserResourceDto
-import pl.put.smartgarden.domain.user.dto.UserSignInDto
-import pl.put.smartgarden.domain.user.dto.UserSignInResponseDto
-import pl.put.smartgarden.domain.user.dto.UserSignUpDto
+import pl.put.smartgarden.domain.user.dto.request.UserResourceRequest
+import pl.put.smartgarden.domain.user.dto.request.UserSignInRequest
+import pl.put.smartgarden.domain.user.dto.request.UserSignInResponseRequest
+import pl.put.smartgarden.domain.user.dto.request.UserSignUpRequest
 import pl.put.smartgarden.domain.SmartGardenException
-import pl.put.smartgarden.domain.device.response.SensorResponse
-import pl.put.smartgarden.domain.user.dto.AreaDto
-import pl.put.smartgarden.domain.user.dto.AreaSettingsDto
-import pl.put.smartgarden.domain.user.dto.IrrigationLevelDto
-import pl.put.smartgarden.domain.user.dto.IrrigationTimeDto
-import pl.put.smartgarden.domain.user.dto.LocationDto
-import pl.put.smartgarden.domain.user.dto.MeasuresDto
-import pl.put.smartgarden.domain.user.dto.NextIrrigationDto
+import pl.put.smartgarden.domain.device.dto.request.MeasureRequest
+import pl.put.smartgarden.domain.device.dto.response.SensorResponse
+import pl.put.smartgarden.domain.user.dto.request.AreaRequest
+import pl.put.smartgarden.domain.user.dto.request.AreaSettingsRequest
+import pl.put.smartgarden.domain.user.dto.request.IrrigationLevelRequest
+import pl.put.smartgarden.domain.user.dto.request.LocationRequest
+import pl.put.smartgarden.domain.user.dto.request.NextIrrigationRequest
 import pl.put.smartgarden.domain.user.exception.UserAlreadyExistsException
 import pl.put.smartgarden.domain.user.repository.UserRepository
 import pl.put.smartgarden.domain.user.repository.VerificationTokenRepository
@@ -38,41 +37,41 @@ class UserService(
     @Value("\${is-user-enabled-by-default}") val isUserEnabledByDefault: Boolean
 ) {
 
-    fun getUsers(): List<UserResourceDto> = userRepository.findAll()
+    fun getUsers(): List<UserResourceRequest> = userRepository.findAll()
         .map { user ->
-            UserResourceDto(
+            UserResourceRequest(
                 username = user.username,
                 email = user.email,
                 deviceGuid = user.device?.guid
             )
         }
 
-    fun signUpUser(userDto: UserSignUpDto) =
-        if (isUserUnique(userDto)) {
-            val user = createUser(userDto)
-            sendVerificationEmail(userDto, user)
+    fun signUpUser(userRequest: UserSignUpRequest) =
+        if (isUserUnique(userRequest)) {
+            val user = createUser(userRequest)
+            sendVerificationEmail(userRequest, user)
         } else {
             throw UserAlreadyExistsException("User with this name or email already exists.", HttpStatus.CONFLICT)
         }
 
-    private fun isUserUnique(userDto: UserSignUpDto): Boolean =
-        userRepository.findByEmail(userDto.email) == null && userRepository.findByUsername(userDto.username) == null
+    private fun isUserUnique(userRequest: UserSignUpRequest): Boolean =
+        userRepository.findByEmail(userRequest.email) == null && userRepository.findByUsername(userRequest.username) == null
 
-    private fun createUser(userDto: UserSignUpDto): User {
+    private fun createUser(userRequest: UserSignUpRequest): User {
         val user = User(
-            username = userDto.username,
+            username = userRequest.username,
             enabled = isUserEnabledByDefault,
-            email = userDto.email,
-            password = bCryptPasswordEncoder.encode(userDto.password)
+            email = userRequest.email,
+            password = bCryptPasswordEncoder.encode(userRequest.password)
         )
         userRepository.save(user)
         return user
     }
 
-    private fun sendVerificationEmail(userDto: UserSignUpDto, user: User) {
+    private fun sendVerificationEmail(userRequest: UserSignUpRequest, user: User) {
         if (!isUserEnabledByDefault)
             GlobalScope.async {
-                val token = mailService.sendVerificationEmail(userDto.username, userDto.email)
+                val token = mailService.sendVerificationEmail(userRequest.username, userRequest.email)
                 val verificationToken = VerificationToken(token = token, user = user)
                 verificationTokenRepository.save(verificationToken)
             }
@@ -86,10 +85,10 @@ class UserService(
         userRepository.save(user)
     }
 
-    fun signIn(userSignInDto: UserSignInDto): UserSignInResponseDto {
-        var user = userRepository.findByEmail(userSignInDto.email)
+    fun signIn(userSignInRequest: UserSignInRequest): UserSignInResponseRequest {
+        var user = userRepository.findByEmail(userSignInRequest.email)
         user = validateUserSignIn(user)
-        return UserSignInResponseDto(
+        return UserSignInResponseRequest(
             token = generateJsonWebToken(user),
             username = user.username,
             id = user.id
@@ -103,9 +102,9 @@ class UserService(
         return user
     }
 
-    fun getCurrentUser(token: String): UserResourceDto {
+    fun getCurrentUser(token: String): UserResourceRequest {
         val user = getUserFromToken(token.substring(7))
-        return UserResourceDto(
+        return UserResourceRequest(
             username = user.username,
             email = user.email,
             deviceGuid = user.device?.guid
@@ -133,23 +132,23 @@ class UserService(
             .compact()
     }
 
-    fun getAreaMeasures(token: String, areaId: String, from: Instant, to: Instant): MeasuresDto {
+    fun getAreaMeasures(token: String, areaId: String, from: Instant, to: Instant): List<MeasureRequest> {
         TODO("Not yet implemented")
     }
 
-    fun setIrrigationLevel(token: String, areaId: String, irrigationLevelDto: IrrigationLevelDto): AreaSettingsDto {
+    fun setIrrigationLevel(token: String, areaId: String, irrigationLevelRequest: IrrigationLevelRequest): AreaSettingsRequest {
         TODO("Not yet implemented")
     }
 
-    fun getAreasSetting(token: String): List<AreaSettingsDto> {
+    fun getAreasSetting(token: String): List<AreaSettingsRequest> {
         TODO("Not yet implemented")
     }
 
-    fun setLocation(token: String, locationDto: LocationDto): UserResourceDto {
+    fun setLocation(token: String, locationRequest: LocationRequest): UserResourceRequest {
         TODO("Not yet implemented")
     }
 
-    fun setNextIrrigationTime(token: String, areaId: String, irrigationTimeDto: IrrigationTimeDto): NextIrrigationDto {
+    fun setNextIrrigationTime(token: String, areaId: String, irrigationTimeRequest: NextIrrigationRequest): NextIrrigationRequest {
         TODO("Not yet implemented")
     }
 
@@ -157,11 +156,11 @@ class UserService(
         TODO("Not yet implemented")
     }
 
-    fun linkSensorToArea(token: String, areaId: String, sensorId: String): List<AreaDto> {
+    fun linkSensorToArea(token: String, areaId: String, sensorId: String): List<AreaRequest> {
         TODO("Not yet implemented")
     }
 
-    fun unlinkSensorFromArea(token: String, sensorId: String): List<AreaDto> {
+    fun unlinkSensorFromArea(token: String, sensorId: String): List<AreaRequest> {
         TODO("Not yet implemented")
     }
 

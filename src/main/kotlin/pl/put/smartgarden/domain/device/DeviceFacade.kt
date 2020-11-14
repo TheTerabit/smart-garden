@@ -1,18 +1,20 @@
 package pl.put.smartgarden.domain.device
 
 import org.springframework.stereotype.Service
-import pl.put.smartgarden.domain.device.dto.DeviceDto
-import pl.put.smartgarden.domain.device.dto.DeviceMeasuresDto
-import pl.put.smartgarden.domain.device.response.DeviceResponse
-import pl.put.smartgarden.domain.device.response.MeasureResponse
+import pl.put.smartgarden.domain.device.dto.request.DeviceRequest
+import pl.put.smartgarden.domain.device.dto.request.MeasureRequest
+import pl.put.smartgarden.domain.device.dto.request.SensorRequest
+import pl.put.smartgarden.domain.device.dto.response.AreaDecisionResponse
+import pl.put.smartgarden.domain.device.dto.response.DeviceResponse
+import pl.put.smartgarden.domain.device.dto.response.MeasureResponse
+import pl.put.smartgarden.domain.device.dto.response.SensorResponse
 
 @Service
 class DeviceFacade(
     val deviceService: DeviceService,
     val sensorService: SensorService
 ) {
-
-    fun createOrUpdateDevice(deviceDto: DeviceDto): DeviceResponse {
+    fun createOrUpdateDevice(deviceRequest: DeviceRequest): DeviceResponse {
         deviceService.createDevice()
         sensorService.createSensors()
         TODO()
@@ -20,11 +22,11 @@ class DeviceFacade(
 
     fun getDevices(): List<Device> = deviceService.getDevices()
 
-    fun createMeasures(deviceMeasuresDto: DeviceMeasuresDto): List<MeasureResponse> {
+    fun createMeasures(deviceMeasuresRequest: List<MeasureRequest>, token: String): List<MeasureResponse> {
         TODO("Not yet implemented")
     }
 
-    fun getIrrigationDecisions(secret: String): List<MeasureResponse> {
+    fun getIrrigationDecisions(token: String): List<AreaDecisionResponse> {
         TODO("Not yet implemented")
     }
 }
