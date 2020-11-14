@@ -19,7 +19,18 @@ import org.springframework.web.bind.annotation.RestController
 import pl.put.smartgarden.domain.device.dto.request.MeasureRequest
 import pl.put.smartgarden.domain.device.dto.response.SensorResponse
 import pl.put.smartgarden.domain.user.UserService
-import pl.put.smartgarden.domain.user.dto.request.*
+import pl.put.smartgarden.domain.user.dto.request.AreaRequest
+import pl.put.smartgarden.domain.user.dto.request.AreaSettingsRequest
+import pl.put.smartgarden.domain.user.dto.request.IrrigationLevelRequest
+import pl.put.smartgarden.domain.user.dto.request.LocationRequest
+import pl.put.smartgarden.domain.user.dto.request.NextIrrigationRequest
+import pl.put.smartgarden.domain.user.dto.request.UserChangeEmailRequest
+import pl.put.smartgarden.domain.user.dto.request.UserChangePasswordRequest
+import pl.put.smartgarden.domain.user.dto.request.UserChangeUsernameRequest
+import pl.put.smartgarden.domain.user.dto.request.UserResourceResponse
+import pl.put.smartgarden.domain.user.dto.request.UserSignInRequest
+import pl.put.smartgarden.domain.user.dto.request.UserSignInResponse
+import pl.put.smartgarden.domain.user.dto.request.UserSignUpRequest
 import java.time.Instant
 import javax.validation.Valid
 
@@ -58,7 +69,7 @@ class UserController(val userService: UserService) {
     @ResponseStatus(HttpStatus.OK)
     fun signIn(@RequestBody user: UserSignInRequest): UserSignInResponse = userService.signIn(user)
 
-    @PutMapping("/logout")
+    @PostMapping("/logout")
     @ApiOperation("Sign out and revoke JWT.")
     @ApiResponses(value = [
         ApiResponse(code = 200, message = "OK"),

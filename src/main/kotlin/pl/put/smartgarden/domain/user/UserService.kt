@@ -2,9 +2,18 @@ package pl.put.smartgarden.domain.user
 
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import pl.put.smartgarden.domain.SmartGardenException
 import pl.put.smartgarden.domain.device.dto.request.MeasureRequest
 import pl.put.smartgarden.domain.device.dto.response.SensorResponse
-import pl.put.smartgarden.domain.user.dto.request.*
+import pl.put.smartgarden.domain.user.dto.request.AreaRequest
+import pl.put.smartgarden.domain.user.dto.request.AreaSettingsRequest
+import pl.put.smartgarden.domain.user.dto.request.IrrigationLevelRequest
+import pl.put.smartgarden.domain.user.dto.request.LocationRequest
+import pl.put.smartgarden.domain.user.dto.request.NextIrrigationRequest
+import pl.put.smartgarden.domain.user.dto.request.UserResourceResponse
+import pl.put.smartgarden.domain.user.dto.request.UserSignInRequest
+import pl.put.smartgarden.domain.user.dto.request.UserSignInResponse
+import pl.put.smartgarden.domain.user.dto.request.UserSignUpRequest
 import pl.put.smartgarden.domain.user.exception.UserAlreadyExistsException
 import pl.put.smartgarden.domain.user.repository.UserRepository
 import java.time.Instant
@@ -39,6 +48,7 @@ class UserService(
 
     fun signIn(userSignInRequest: UserSignInRequest): UserSignInResponse {
         var user = userRepository.findByEmail(userSignInRequest.email)
+        user ?: throw SmartGardenException("Bad login or password.", HttpStatus.BAD_REQUEST)
         user = securityService.validateUserSignIn(user)
         return UserSignInResponse(
             token = securityService.generateJsonWebTokenFromUser(user),

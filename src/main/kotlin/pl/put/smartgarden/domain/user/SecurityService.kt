@@ -26,14 +26,12 @@ class SecurityService(
     @Value("\${is-user-enabled-by-default}") val isUserEnabledByDefault: Boolean
 ) {
 
-    fun createUser(userDto: UserSignUpRequest): User {
-        return User(
+    fun createUser(userDto: UserSignUpRequest): User = User(
             username = userDto.username,
             enabled = isUserEnabledByDefault,
             email = userDto.email,
             password = bCryptPasswordEncoder.encode(userDto.password)
         )
-    }
 
     fun sendVerificationEmail(userDto: UserSignUpRequest, user: User) {
         if (!isUserEnabledByDefault)
@@ -44,8 +42,7 @@ class SecurityService(
             }
     }
 
-    fun validateUserSignIn(user: User?): User {
-        user ?: throw SmartGardenException("Bad login or password.", HttpStatus.BAD_REQUEST)
+    fun validateUserSignIn(user: User): User {
         if (!user.enabled) throw SmartGardenException("Account is not enabled.", HttpStatus.UNAUTHORIZED)
         if (!bCryptPasswordEncoder.matches(user.password, user.password)) throw SmartGardenException("Bad login or password.", HttpStatus.BAD_REQUEST)
         return user
