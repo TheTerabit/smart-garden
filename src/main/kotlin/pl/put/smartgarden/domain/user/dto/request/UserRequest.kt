@@ -21,13 +21,13 @@ data class UserSignInRequest(
     val password: String
 )
 
-data class UserSignInResponseRequest(
+data class UserSignInResponse(
     val token: String,
     val username: String,
     val id: String
 )
 
-data class UserResourceRequest(
+data class UserResourceResponse(
     val username: String,
     val email: String,
     val deviceGuid: String?
