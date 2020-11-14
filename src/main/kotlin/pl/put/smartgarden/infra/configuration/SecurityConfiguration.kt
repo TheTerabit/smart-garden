@@ -33,7 +33,7 @@ class SecurityConfigurationn : WebSecurityConfigurerAdapter() {
     }
 
     @Bean
-    fun passwordEncoder(): BCryptPasswordEncoder? = BCryptPasswordEncoder()
+    fun passwordEncoder(): BCryptPasswordEncoder = BCryptPasswordEncoder()
 
     @Bean
     fun filterRegistrationBean(filter: JwtFilter): FilterRegistrationBean<Filter> {

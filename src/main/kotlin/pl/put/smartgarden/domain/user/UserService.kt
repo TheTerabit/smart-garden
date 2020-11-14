@@ -3,10 +3,9 @@ package pl.put.smartgarden.domain.user
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import pl.put.smartgarden.domain.SmartGardenException
+import pl.put.smartgarden.domain.device.DeviceFacade
 import pl.put.smartgarden.domain.device.dto.response.MeasureResponse
 import pl.put.smartgarden.domain.device.dto.response.SensorResponse
-import pl.put.smartgarden.domain.user.dto.response.AreaResponse
-import pl.put.smartgarden.domain.user.dto.response.AreaSettingsResponse
 import pl.put.smartgarden.domain.user.dto.request.IrrigationLevelRequest
 import pl.put.smartgarden.domain.user.dto.request.LocationRequest
 import pl.put.smartgarden.domain.user.dto.request.NextIrrigationRequest
@@ -14,6 +13,8 @@ import pl.put.smartgarden.domain.user.dto.request.UserResourceResponse
 import pl.put.smartgarden.domain.user.dto.request.UserSignInRequest
 import pl.put.smartgarden.domain.user.dto.request.UserSignInResponse
 import pl.put.smartgarden.domain.user.dto.request.UserSignUpRequest
+import pl.put.smartgarden.domain.user.dto.response.AreaResponse
+import pl.put.smartgarden.domain.user.dto.response.AreaSettingsResponse
 import pl.put.smartgarden.domain.user.exception.UserAlreadyExistsException
 import pl.put.smartgarden.domain.user.repository.UserRepository
 import java.time.Instant
@@ -21,6 +22,7 @@ import java.time.Instant
 @Service
 class UserService(
     val securityService: SecurityService,
+    val deviceFacade: DeviceFacade,
     val userRepository: UserRepository
 ) {
 
@@ -36,8 +38,10 @@ class UserService(
 
     fun signUpUser(userDto: UserSignUpRequest) =
         if (isUserUnique(userDto)) {
-            val user = securityService.createUser(userDto)
-            userRepository.save(user)
+            var user = securityService.createUser(userDto)
+            user = userRepository.save(user)
+
+            deviceFacade.addUserDevice(userDto.deviceGuid, userDto.latitude, userDto.longitude, user.id)
             securityService.sendVerificationEmail(userDto, user)
         } else {
             throw UserAlreadyExistsException("User with this name or email already exists.", HttpStatus.CONFLICT)
@@ -47,12 +51,14 @@ class UserService(
         userRepository.findByEmail(userRequest.email) == null && userRepository.findByUsername(userRequest.username) == null
 
     fun signIn(userSignInRequest: UserSignInRequest): UserSignInResponse {
-        var user = userRepository.findByEmail(userSignInRequest.email)
+        val user = userRepository.findByEmail(userSignInRequest.email)
+
         user ?: throw SmartGardenException("Bad login or password.", HttpStatus.BAD_REQUEST)
-        user = securityService.validateUserSignIn(user)
+        if (!user.enabled) throw SmartGardenException("Account is not enabled.", HttpStatus.UNAUTHORIZED)
+        securityService.validateUserPassword(userSignInRequest.password, user.password)
+
         return UserSignInResponse(
             token = securityService.generateJsonWebTokenFromUser(user),
-
             username = user.username,
             id = user.id
         )
@@ -111,6 +117,6 @@ class UserService(
     }
 
     fun signOut(token: String) {
-        securityService.revokeToken(token);
+        securityService.revokeToken(token)
     }
 }

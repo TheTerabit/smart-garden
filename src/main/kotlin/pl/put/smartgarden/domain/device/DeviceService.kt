@@ -7,9 +7,19 @@ import pl.put.smartgarden.domain.device.repository.DeviceRepository
 class DeviceService(
     val deviceRepository: DeviceRepository
 ) {
-    fun createDevice() {
-        TODO("Not yet implemented")
-    }
 
     fun getDevices() = deviceRepository.findAll()
+
+    fun createDevice(deviceGuid: String, latitude: Double, longitude: Double, userId: Int) {
+        val device = Device(
+            guid = deviceGuid,
+            latitude = latitude,
+            longitude = longitude,
+            userId = userId,
+            sensors = mutableListOf(),
+            areas = mutableListOf()
+        )
+
+        deviceRepository.save(device)
+    }
 }

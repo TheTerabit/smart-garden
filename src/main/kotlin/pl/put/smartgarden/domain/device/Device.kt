@@ -16,7 +16,7 @@ import javax.persistence.Table
 class Device(
     var guid: String,
     @Column(name = "user_id")
-    var userId: String,
+    var userId: Int,
     var latitude: Double,
     var longitude: Double,
     @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])

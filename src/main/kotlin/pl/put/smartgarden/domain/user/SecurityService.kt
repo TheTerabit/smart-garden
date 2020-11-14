@@ -42,10 +42,8 @@ class SecurityService(
             }
     }
 
-    fun validateUserSignIn(user: User): User {
-        if (!user.enabled) throw SmartGardenException("Account is not enabled.", HttpStatus.UNAUTHORIZED)
-        if (!bCryptPasswordEncoder.matches(user.password, user.password)) throw SmartGardenException("Bad login or password.", HttpStatus.BAD_REQUEST)
-        return user
+    fun validateUserPassword(password: String, passwordEncoded : String) {
+        if (!bCryptPasswordEncoder.matches(password, passwordEncoded)) throw SmartGardenException("Bad login or password.", HttpStatus.BAD_REQUEST)
     }
 
     fun getUserFromVerificationToken(token: String): User {
@@ -61,7 +59,10 @@ class SecurityService(
             throw SmartGardenException("Bad token", HttpStatus.UNAUTHORIZED)
 
         val claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(tokenValue).body
-        val user = userRepository.findById(claims["sub"].toString())
+        val userId = claims["sub"].toString().toIntOrNull()
+        userId ?: throw SmartGardenException("Bad token", HttpStatus.UNAUTHORIZED)
+
+        val user = userRepository.findById(userId)
 
         if (!user.isPresent) throw SmartGardenException("Bad token", HttpStatus.UNAUTHORIZED)
 

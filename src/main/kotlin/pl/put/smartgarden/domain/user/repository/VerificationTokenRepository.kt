@@ -5,6 +5,6 @@ import org.springframework.stereotype.Repository
 import pl.put.smartgarden.domain.user.VerificationToken
 
 @Repository
-interface VerificationTokenRepository : JpaRepository<VerificationToken, String> {
+interface VerificationTokenRepository : JpaRepository<VerificationToken, Int> {
     fun findByToken(token: String): VerificationToken?
 }
