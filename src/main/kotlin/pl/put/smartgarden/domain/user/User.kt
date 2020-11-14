@@ -24,9 +24,9 @@ class User(
 ) {
     @Id
     @Column(name = "id")
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    lateinit var id: String
+    @GeneratedValue(generator="increment")
+    @GenericGenerator(name="increment", strategy = "increment")
+    var id: Int = 0
 }
 
 @Entity
@@ -38,9 +38,10 @@ class VerificationToken(
     open var user: User
 ) {
     @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    lateinit var id: String
+    @Column(name = "id")
+    @GeneratedValue(generator="increment")
+    @GenericGenerator(name="increment", strategy = "increment")
+    var id: Int = 0
 }
 
 @Entity
