@@ -5,4 +5,4 @@ import org.springframework.stereotype.Repository
 import pl.put.smartgarden.domain.device.Measure
 
 @Repository
-interface MeasureRepository : JpaRepository<Measure, String>
+interface MeasureRepository : JpaRepository<Measure, Int>

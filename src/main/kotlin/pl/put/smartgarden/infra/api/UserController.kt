@@ -17,10 +17,11 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import pl.put.smartgarden.domain.device.dto.request.MeasureRequest
+import pl.put.smartgarden.domain.device.dto.response.MeasureResponse
 import pl.put.smartgarden.domain.device.dto.response.SensorResponse
 import pl.put.smartgarden.domain.user.UserService
-import pl.put.smartgarden.domain.user.dto.request.AreaRequest
-import pl.put.smartgarden.domain.user.dto.request.AreaSettingsRequest
+import pl.put.smartgarden.domain.user.dto.response.AreaResponse
+import pl.put.smartgarden.domain.user.dto.response.AreaSettingsResponse
 import pl.put.smartgarden.domain.user.dto.request.IrrigationLevelRequest
 import pl.put.smartgarden.domain.user.dto.request.LocationRequest
 import pl.put.smartgarden.domain.user.dto.request.NextIrrigationRequest
@@ -109,7 +110,7 @@ class UserController(val userService: UserService) {
     @ResponseStatus(HttpStatus.OK)
     fun changePassword(@RequestBody user: UserChangePasswordRequest): UserResourceResponse {
         // TODO
-        return UserResourceResponse("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
+        return UserResourceResponse(1, "nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
     }
 
     @PutMapping("/me/change-email")
@@ -122,7 +123,7 @@ class UserController(val userService: UserService) {
     @ResponseStatus(HttpStatus.OK)
     fun changeEmail(@RequestBody user: UserChangeEmailRequest): UserResourceResponse {
         // TODO
-        return UserResourceResponse("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
+        return UserResourceResponse(1, "nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
     }
 
     @PutMapping("/me/change-username")
@@ -135,7 +136,7 @@ class UserController(val userService: UserService) {
     @ResponseStatus(HttpStatus.OK)
     fun changeUsername(@RequestBody user: UserChangeUsernameRequest): UserResourceResponse {
         // TODO
-        return UserResourceResponse("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
+        return UserResourceResponse(1, "nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
     }
 
     @GetMapping("/area/{areaId}/measures")
@@ -151,7 +152,7 @@ class UserController(val userService: UserService) {
         @PathVariable("areaId") areaId: String,
         @RequestParam("from", required = false) from: Instant,
         @RequestParam("to", required = false) to: Instant
-    ): List<MeasureRequest> =
+    ): List<MeasureResponse> =
         userService.getAreaMeasures(token, areaId, from, to)
 
     @PutMapping("/areas/{areaId}/irrigation-level")
@@ -166,7 +167,7 @@ class UserController(val userService: UserService) {
         @RequestHeader("Authorization") token: String,
         @RequestBody irrigationLevelRequest: IrrigationLevelRequest,
         @PathVariable("areaId") areaId: String
-    ): AreaSettingsRequest =
+    ): AreaSettingsResponse =
         userService.setIrrigationLevel(token, areaId, irrigationLevelRequest)
 
     @GetMapping("/areas/settings")
@@ -177,7 +178,7 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 403, message = "Unactivated")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun getIrrigationSettings(@RequestHeader("Authorization") token: String): List<AreaSettingsRequest> =
+    fun getIrrigationSettings(@RequestHeader("Authorization") token: String): List<AreaSettingsResponse> =
         userService.getAreasSetting(token)
 
     @PutMapping("/me/location")
@@ -235,7 +236,7 @@ class UserController(val userService: UserService) {
         @RequestHeader("Authorization") token: String,
         @PathVariable("areaId") areaId: String,
         @PathVariable("sensorId") sensorId: String
-    ): List<AreaRequest> =
+    ): List<AreaResponse> =
         userService.linkSensorToArea(token, areaId, sensorId)
 
     @PutMapping("/areas/unlink-sensor/{sensorId}")
@@ -249,7 +250,7 @@ class UserController(val userService: UserService) {
     fun unlinkSensorFromArea(
         @RequestHeader("Authorization") token: String,
         @PathVariable("sensorId") sensorId: String
-    ): List<AreaRequest> =
+    ): List<AreaResponse> =
         userService.unlinkSensorFromArea(token, sensorId)
 
     @GetMapping("/sensors")

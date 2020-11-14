@@ -4,9 +4,10 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import pl.put.smartgarden.domain.SmartGardenException
 import pl.put.smartgarden.domain.device.dto.request.MeasureRequest
+import pl.put.smartgarden.domain.device.dto.response.MeasureResponse
 import pl.put.smartgarden.domain.device.dto.response.SensorResponse
-import pl.put.smartgarden.domain.user.dto.request.AreaRequest
-import pl.put.smartgarden.domain.user.dto.request.AreaSettingsRequest
+import pl.put.smartgarden.domain.user.dto.response.AreaResponse
+import pl.put.smartgarden.domain.user.dto.response.AreaSettingsResponse
 import pl.put.smartgarden.domain.user.dto.request.IrrigationLevelRequest
 import pl.put.smartgarden.domain.user.dto.request.LocationRequest
 import pl.put.smartgarden.domain.user.dto.request.NextIrrigationRequest
@@ -28,6 +29,7 @@ class UserService(
     fun getUsers(): List<UserResourceResponse> = userRepository.findAll()
         .map { user ->
             UserResourceResponse(
+                id = user.id!!,
                 username = user.username,
                 email = user.email,
                 deviceGuid = user.device?.guid
@@ -52,8 +54,9 @@ class UserService(
         user = securityService.validateUserSignIn(user)
         return UserSignInResponse(
             token = securityService.generateJsonWebTokenFromUser(user),
+
             username = user.username,
-            id = user.id
+            id = user.id!!
         )
     }
 
@@ -66,21 +69,22 @@ class UserService(
     fun getCurrentUser(token: String): UserResourceResponse {
         val user = securityService.getUserFromJWToken(token)
         return UserResourceResponse(
+            id = user.id!!,
             username = user.username,
             email = user.email,
             deviceGuid = user.device?.guid
         )
     }
 
-    fun getAreaMeasures(token: String, areaId: String, from: Instant, to: Instant): List<MeasureRequest> {
+    fun getAreaMeasures(token: String, areaId: String, from: Instant, to: Instant): List<MeasureResponse> {
         TODO("Not yet implemented")
     }
 
-    fun setIrrigationLevel(token: String, areaId: String, irrigationLevelRequest: IrrigationLevelRequest): AreaSettingsRequest {
+    fun setIrrigationLevel(token: String, areaId: String, irrigationLevelRequest: IrrigationLevelRequest): AreaSettingsResponse {
         TODO("Not yet implemented")
     }
 
-    fun getAreasSetting(token: String): List<AreaSettingsRequest> {
+    fun getAreasSetting(token: String): List<AreaSettingsResponse> {
         TODO("Not yet implemented")
     }
 
@@ -96,11 +100,11 @@ class UserService(
         TODO("Not yet implemented")
     }
 
-    fun linkSensorToArea(token: String, areaId: String, sensorId: String): List<AreaRequest> {
+    fun linkSensorToArea(token: String, areaId: String, sensorId: String): List<AreaResponse> {
         TODO("Not yet implemented")
     }
 
-    fun unlinkSensorFromArea(token: String, sensorId: String): List<AreaRequest> {
+    fun unlinkSensorFromArea(token: String, sensorId: String): List<AreaResponse> {
         TODO("Not yet implemented")
     }
 

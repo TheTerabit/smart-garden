@@ -5,4 +5,4 @@ import org.springframework.stereotype.Repository
 import pl.put.smartgarden.domain.device.Irrigation
 
 @Repository
-interface IrrigationRepository : JpaRepository<Irrigation, String>
+interface IrrigationRepository : JpaRepository<Irrigation, Int>

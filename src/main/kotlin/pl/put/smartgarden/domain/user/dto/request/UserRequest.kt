@@ -24,10 +24,11 @@ data class UserSignInRequest(
 data class UserSignInResponse(
     val token: String,
     val username: String,
-    val id: String
+    val id: Int
 )
 
 data class UserResourceResponse(
+    val id: Int,
     val username: String,
     val email: String,
     val deviceGuid: String?

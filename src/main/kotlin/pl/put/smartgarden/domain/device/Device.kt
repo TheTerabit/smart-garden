@@ -16,9 +16,9 @@ import javax.persistence.Table
 class Device(
     var guid: String,
     @Column(name = "user_id")
-    var userId: String?,
-    var latitude: Double?,
-    var longitude: Double?,
+    var userId: String,
+    var latitude: Double,
+    var longitude: Double,
     @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
     @JoinColumn(name = "device_id", referencedColumnName = "id")
     var sensors: MutableList<Sensor>,
@@ -28,9 +28,9 @@ class Device(
 ) {
     @Id
     @Column(name = "id")
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    lateinit var id: String
+    @GeneratedValue(generator="increment")
+    @GenericGenerator(name="increment", strategy = "increment")
+    var id: Int? = null
 }
 
 @Entity
@@ -48,9 +48,9 @@ class Sensor(
 ) {
     @Id
     @Column(name = "id")
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    lateinit var id: String
+    @GeneratedValue(generator="increment")
+    @GenericGenerator(name="increment", strategy = "increment")
+    var id: Int? = null
 }
 
 @Entity
@@ -58,16 +58,15 @@ class Sensor(
 class Measure(
     var timestamp: Instant,
     var type: String,
-    var unit: String,
     var value: Double,
     @Column(name = "sensor_id")
     var sensorId: String
 ) {
     @Id
     @Column(name = "id")
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    lateinit var id: String
+    @GeneratedValue(generator="increment")
+    @GenericGenerator(name="increment", strategy = "increment")
+    var id: Int? = null
 }
 
 @Entity
@@ -85,9 +84,9 @@ class Area(
 ) {
     @Id
     @Column(name = "id")
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    lateinit var id: String
+    @GeneratedValue(generator="increment")
+    @GenericGenerator(name="increment", strategy = "increment")
+    var id: Int? = null
 }
 
 @Entity
@@ -100,7 +99,7 @@ class Irrigation(
 ) {
     @Id
     @Column(name = "id")
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    lateinit var id: String
+    @GeneratedValue(generator="increment")
+    @GenericGenerator(name="increment", strategy = "increment")
+    var id: Int? = null
 }
