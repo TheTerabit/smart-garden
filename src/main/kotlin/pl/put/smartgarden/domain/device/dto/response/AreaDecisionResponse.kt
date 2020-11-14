@@ -1,4 +1,4 @@
-package pl.put.smartgarden.domain.device.response
+package pl.put.smartgarden.domain.device.dto.response
 
 data class AreaDecisionResponse(
     val sensorGuid: String,

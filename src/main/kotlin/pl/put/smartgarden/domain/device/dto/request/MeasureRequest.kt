@@ -1,9 +1,8 @@
-package pl.put.smartgarden.domain.device.dto
+package pl.put.smartgarden.domain.device.dto.request
 
 import java.time.Instant
 
-data class MeasureDto(
-    val id: String,
+data class MeasureRequest(
     val timestamp: Instant,
     val sensorId: String,
     val value: Double,

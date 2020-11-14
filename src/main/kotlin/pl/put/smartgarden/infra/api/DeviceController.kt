@@ -15,11 +15,11 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import pl.put.smartgarden.domain.device.Device
 import pl.put.smartgarden.domain.device.DeviceFacade
-import pl.put.smartgarden.domain.device.response.MeasureResponse
-import pl.put.smartgarden.domain.device.dto.MeasureDto
-import pl.put.smartgarden.domain.device.dto.SensorDto
-import pl.put.smartgarden.domain.device.response.AreaDecisionResponse
-import pl.put.smartgarden.domain.device.response.SensorResponse
+import pl.put.smartgarden.domain.device.dto.request.DeviceRequest
+import pl.put.smartgarden.domain.device.dto.response.MeasureResponse
+import pl.put.smartgarden.domain.device.dto.request.MeasureRequest
+import pl.put.smartgarden.domain.device.dto.response.AreaDecisionResponse
+import pl.put.smartgarden.domain.device.dto.response.DeviceResponse
 
 @Api(description = "Devices api")
 @RestController
@@ -35,10 +35,10 @@ class DeviceController(
         ApiResponse(code = 409, message = "Conflict")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun createOrUpdateDevice(@RequestBody sensors: List<SensorDto>): List<SensorResponse> =
-        deviceFacade.createOrUpdateDevice(sensors)
+    fun createOrUpdateDevice(@RequestBody deviceRequest: DeviceRequest): DeviceResponse =
+        deviceFacade.createOrUpdateDevice(deviceRequest)
 
-    @PostMapping("/{id}/measures")
+    @PostMapping("/measures")
     @ApiOperation("Save new measures from device.")
     @ApiResponses(value = [
         ApiResponse(code = 200, message = "OK"),
@@ -46,7 +46,7 @@ class DeviceController(
     ])
     @ResponseStatus(HttpStatus.OK)
     fun createMeasures(
-        @RequestBody deviceMeasures: List<MeasureDto>,
+        @RequestBody deviceMeasures: List<MeasureRequest>,
         @RequestHeader("Authorization") token: String
     ): List<MeasureResponse> =
         deviceFacade.createMeasures(deviceMeasures, token)
@@ -62,5 +62,6 @@ class DeviceController(
         deviceFacade.getIrrigationDecisions(token)
 
     @GetMapping
+    @ApiOperation("TO JEST TYLKO TESTOWY ENDPOINT KTORY WYWALIMY - WOJTEK NIE KORZYSTAJ Z NIEGO xD.")
     fun getDevices(): List<Device> = deviceFacade.getDevices()
 }

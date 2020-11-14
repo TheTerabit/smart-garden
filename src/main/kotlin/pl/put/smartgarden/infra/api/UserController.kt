@@ -16,21 +16,21 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-import pl.put.smartgarden.domain.device.dto.MeasureDto
-import pl.put.smartgarden.domain.device.response.SensorResponse
+import pl.put.smartgarden.domain.device.dto.request.MeasureRequest
+import pl.put.smartgarden.domain.device.dto.response.SensorResponse
 import pl.put.smartgarden.domain.user.UserService
-import pl.put.smartgarden.domain.user.dto.AreaDto
-import pl.put.smartgarden.domain.user.dto.AreaSettingsDto
-import pl.put.smartgarden.domain.user.dto.IrrigationLevelDto
-import pl.put.smartgarden.domain.user.dto.LocationDto
-import pl.put.smartgarden.domain.user.dto.NextIrrigationDto
-import pl.put.smartgarden.domain.user.dto.UserChangeEmailDto
-import pl.put.smartgarden.domain.user.dto.UserChangePasswordDto
-import pl.put.smartgarden.domain.user.dto.UserChangeUsernameDto
-import pl.put.smartgarden.domain.user.dto.UserResourceDto
-import pl.put.smartgarden.domain.user.dto.UserSignInDto
-import pl.put.smartgarden.domain.user.dto.UserSignInResponseDto
-import pl.put.smartgarden.domain.user.dto.UserSignUpDto
+import pl.put.smartgarden.domain.user.dto.request.AreaRequest
+import pl.put.smartgarden.domain.user.dto.request.AreaSettingsRequest
+import pl.put.smartgarden.domain.user.dto.request.IrrigationLevelRequest
+import pl.put.smartgarden.domain.user.dto.request.LocationRequest
+import pl.put.smartgarden.domain.user.dto.request.NextIrrigationRequest
+import pl.put.smartgarden.domain.user.dto.request.UserChangeEmailRequest
+import pl.put.smartgarden.domain.user.dto.request.UserChangePasswordRequest
+import pl.put.smartgarden.domain.user.dto.request.UserChangeUsernameRequest
+import pl.put.smartgarden.domain.user.dto.request.UserResourceRequest
+import pl.put.smartgarden.domain.user.dto.request.UserSignInRequest
+import pl.put.smartgarden.domain.user.dto.request.UserSignInResponseRequest
+import pl.put.smartgarden.domain.user.dto.request.UserSignUpRequest
 import java.time.Instant
 import javax.validation.Valid
 
@@ -47,7 +47,7 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 409, message = "Conflict")
     ])
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun signUp(@Valid @RequestBody user: UserSignUpDto) = userService.signUpUser(user)
+    fun signUp(@Valid @RequestBody user: UserSignUpRequest) = userService.signUpUser(user)
 
     @GetMapping("/sign-up-confirmation")
     @ApiOperation("Confirm account creation (link sent to email).")
@@ -67,7 +67,7 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 403, message = "Unactivated")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun signIn(@RequestBody user: UserSignInDto): UserSignInResponseDto = userService.signIn(user)
+    fun signIn(@RequestBody user: UserSignInRequest): UserSignInResponseRequest = userService.signIn(user)
 
     @GetMapping
     @ApiOperation("Get all users.")
@@ -77,7 +77,7 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 404, message = "Not found")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun getUsers(): List<UserResourceDto> = userService.getUsers()
+    fun getUsers(): List<UserResourceRequest> = userService.getUsers()
 
     @GetMapping("/me")
     @ApiOperation("Get currently logged user details.")
@@ -87,7 +87,7 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 404, message = "Not found")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun getCurrentUser(@RequestHeader("Authorization") token: String): UserResourceDto =
+    fun getCurrentUser(@RequestHeader("Authorization") token: String): UserResourceRequest =
         userService.getCurrentUser(token)
 
     @PutMapping("/me/change-password")
@@ -98,9 +98,9 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 404, message = "Not found")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun changePassword(@RequestBody user: UserChangePasswordDto): UserResourceDto {
+    fun changePassword(@RequestBody user: UserChangePasswordRequest): UserResourceRequest {
         // TODO
-        return UserResourceDto("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
+        return UserResourceRequest("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
     }
 
     @PutMapping("/me/change-email")
@@ -111,9 +111,9 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 404, message = "Not found")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun changeEmail(@RequestBody user: UserChangeEmailDto): UserResourceDto {
+    fun changeEmail(@RequestBody user: UserChangeEmailRequest): UserResourceRequest {
         // TODO
-        return UserResourceDto("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
+        return UserResourceRequest("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
     }
 
     @PutMapping("/me/change-username")
@@ -124,9 +124,9 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 404, message = "Not found")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun changeUsername(@RequestBody user: UserChangeUsernameDto): UserResourceDto {
+    fun changeUsername(@RequestBody user: UserChangeUsernameRequest): UserResourceRequest {
         // TODO
-        return UserResourceDto("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
+        return UserResourceRequest("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
     }
 
     @GetMapping("/area/{areaId}/measures")
@@ -142,7 +142,7 @@ class UserController(val userService: UserService) {
         @PathVariable("areaId") areaId: String,
         @RequestParam("from", required = false) from: Instant,
         @RequestParam("to", required = false) to: Instant
-    ): List<MeasureDto> =
+    ): List<MeasureRequest> =
         userService.getAreaMeasures(token, areaId, from, to)
 
     @PutMapping("/areas/{areaId}/irrigation-level")
@@ -155,10 +155,10 @@ class UserController(val userService: UserService) {
     @ResponseStatus(HttpStatus.OK)
     fun setIrrigationLevel(
         @RequestHeader("Authorization") token: String,
-        @RequestBody irrigationLevelDto: IrrigationLevelDto,
+        @RequestBody irrigationLevelRequest: IrrigationLevelRequest,
         @PathVariable("areaId") areaId: String
-    ): AreaSettingsDto =
-        userService.setIrrigationLevel(token, areaId, irrigationLevelDto)
+    ): AreaSettingsRequest =
+        userService.setIrrigationLevel(token, areaId, irrigationLevelRequest)
 
     @GetMapping("/areas/settings")
     @ApiOperation("Get settings for all areas.")
@@ -168,7 +168,7 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 403, message = "Unactivated")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun getIrrigationSettings(@RequestHeader("Authorization") token: String): List<AreaSettingsDto> =
+    fun getIrrigationSettings(@RequestHeader("Authorization") token: String): List<AreaSettingsRequest> =
         userService.getAreasSetting(token)
 
     @PutMapping("/me/location")
@@ -181,9 +181,9 @@ class UserController(val userService: UserService) {
     @ResponseStatus(HttpStatus.OK)
     fun setLocation(
         @RequestHeader("Authorization") token: String,
-        @RequestBody locationDto: LocationDto
-    ): UserResourceDto =
-        userService.setLocation(token, locationDto)
+        @RequestBody locationRequest: LocationRequest
+    ): UserResourceRequest =
+        userService.setLocation(token, locationRequest)
 
     @PutMapping("/areas/{areaId}/next-irrigation")
     @ApiOperation("Set next irrigation time for selected area.")
@@ -195,10 +195,10 @@ class UserController(val userService: UserService) {
     @ResponseStatus(HttpStatus.OK)
     fun setNextIrrigationTime(
         @RequestHeader("Authorization") token: String,
-        @RequestBody irrigationTimeDto: NextIrrigationDto,
+        @RequestBody irrigationTimeRequest: NextIrrigationRequest,
         @PathVariable("areaId") areaId: String
-    ): NextIrrigationDto =
-        userService.setNextIrrigationTime(token, areaId, irrigationTimeDto)
+    ): NextIrrigationRequest =
+        userService.setNextIrrigationTime(token, areaId, irrigationTimeRequest)
 
     @PostMapping("/areas/{areaId}/irrigate-now")
     @ApiOperation("Irrigate selected area.")
@@ -226,7 +226,7 @@ class UserController(val userService: UserService) {
         @RequestHeader("Authorization") token: String,
         @PathVariable("areaId") areaId: String,
         @PathVariable("sensorId") sensorId: String
-    ): List<AreaDto> =
+    ): List<AreaRequest> =
         userService.linkSensorToArea(token, areaId, sensorId)
 
     @PutMapping("/areas/unlink-sensor/{sensorId}")
@@ -240,11 +240,11 @@ class UserController(val userService: UserService) {
     fun unlinkSensorFromArea(
         @RequestHeader("Authorization") token: String,
         @PathVariable("sensorId") sensorId: String
-    ): List<AreaDto> =
+    ): List<AreaRequest> =
         userService.unlinkSensorFromArea(token, sensorId)
 
     @GetMapping("/sensors")
-    @ApiOperation("Get not linked sensors.")
+    @ApiOperation("Get all sensors.")
     @ApiResponses(value = [
         ApiResponse(code = 200, message = "OK"),
         ApiResponse(code = 400, message = "Bad request"),

@@ -1,8 +1,8 @@
-package pl.put.smartgarden.domain.user.dto
+package pl.put.smartgarden.domain.user.dto.request
 
 import java.time.Instant
 
-data class NextIrrigationDto(
+data class NextIrrigationRequest(
     val timestamp: Instant,
     val irrigationLevel: Int
 )
