@@ -71,7 +71,7 @@ class SecurityService(
     fun generateJsonWebTokenFromUser(user: User): String {
         val now = System.currentTimeMillis()
         return Jwts.builder()
-            .setSubject(user.id)
+            .setSubject(user.id.toString())
             .claim("roles", "USER")
             .setIssuedAt(Date(now))
             .signWith(SignatureAlgorithm.HS512, secretKey)

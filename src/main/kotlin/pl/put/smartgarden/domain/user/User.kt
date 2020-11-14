@@ -26,7 +26,7 @@ class User(
     @Column(name = "id")
     @GeneratedValue(generator="increment")
     @GenericGenerator(name="increment", strategy = "increment")
-    var id: Int? = null
+    var id: Int = 0
 }
 
 @Entity
@@ -41,7 +41,7 @@ class VerificationToken(
     @Column(name = "id")
     @GeneratedValue(generator="increment")
     @GenericGenerator(name="increment", strategy = "increment")
-    var id: Int? = null
+    var id: Int = 0
 }
 
 @Entity

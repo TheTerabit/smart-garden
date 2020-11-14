@@ -3,7 +3,6 @@ package pl.put.smartgarden.domain.user
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import pl.put.smartgarden.domain.SmartGardenException
-import pl.put.smartgarden.domain.device.dto.request.MeasureRequest
 import pl.put.smartgarden.domain.device.dto.response.MeasureResponse
 import pl.put.smartgarden.domain.device.dto.response.SensorResponse
 import pl.put.smartgarden.domain.user.dto.response.AreaResponse
@@ -19,7 +18,6 @@ import pl.put.smartgarden.domain.user.exception.UserAlreadyExistsException
 import pl.put.smartgarden.domain.user.repository.UserRepository
 import java.time.Instant
 
-
 @Service
 class UserService(
     val securityService: SecurityService,
@@ -29,7 +27,7 @@ class UserService(
     fun getUsers(): List<UserResourceResponse> = userRepository.findAll()
         .map { user ->
             UserResourceResponse(
-                id = user.id!!,
+                id = user.id,
                 username = user.username,
                 email = user.email,
                 deviceGuid = user.device?.guid
@@ -56,7 +54,7 @@ class UserService(
             token = securityService.generateJsonWebTokenFromUser(user),
 
             username = user.username,
-            id = user.id!!
+            id = user.id
         )
     }
 
@@ -69,7 +67,7 @@ class UserService(
     fun getCurrentUser(token: String): UserResourceResponse {
         val user = securityService.getUserFromJWToken(token)
         return UserResourceResponse(
-            id = user.id!!,
+            id = user.id,
             username = user.username,
             email = user.email,
             deviceGuid = user.device?.guid

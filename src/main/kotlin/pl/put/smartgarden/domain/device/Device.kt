@@ -30,7 +30,7 @@ class Device(
     @Column(name = "id")
     @GeneratedValue(generator="increment")
     @GenericGenerator(name="increment", strategy = "increment")
-    var id: Int? = null
+    var id: Int = 0
 }
 
 @Entity
@@ -50,7 +50,7 @@ class Sensor(
     @Column(name = "id")
     @GeneratedValue(generator="increment")
     @GenericGenerator(name="increment", strategy = "increment")
-    var id: Int? = null
+    var id: Int = 0
 }
 
 @Entity
@@ -66,7 +66,7 @@ class Measure(
     @Column(name = "id")
     @GeneratedValue(generator="increment")
     @GenericGenerator(name="increment", strategy = "increment")
-    var id: Int? = null
+    var id: Int = 0
 }
 
 @Entity
@@ -86,7 +86,7 @@ class Area(
     @Column(name = "id")
     @GeneratedValue(generator="increment")
     @GenericGenerator(name="increment", strategy = "increment")
-    var id: Int? = null
+    var id: Int = 0
 }
 
 @Entity
@@ -101,5 +101,5 @@ class Irrigation(
     @Column(name = "id")
     @GeneratedValue(generator="increment")
     @GenericGenerator(name="increment", strategy = "increment")
-    var id: Int? = null
+    var id: Int = 0
 }
