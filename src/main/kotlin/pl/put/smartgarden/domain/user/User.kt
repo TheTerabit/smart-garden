@@ -42,3 +42,10 @@ class VerificationToken(
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     lateinit var id: String
 }
+
+@Entity
+@Table(name = "RevokedTokens")
+class RevokedToken(
+        @Id
+        var token: String
+)

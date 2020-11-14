@@ -27,9 +27,9 @@ import pl.put.smartgarden.domain.user.dto.request.NextIrrigationRequest
 import pl.put.smartgarden.domain.user.dto.request.UserChangeEmailRequest
 import pl.put.smartgarden.domain.user.dto.request.UserChangePasswordRequest
 import pl.put.smartgarden.domain.user.dto.request.UserChangeUsernameRequest
-import pl.put.smartgarden.domain.user.dto.request.UserResourceRequest
+import pl.put.smartgarden.domain.user.dto.request.UserResourceResponse
 import pl.put.smartgarden.domain.user.dto.request.UserSignInRequest
-import pl.put.smartgarden.domain.user.dto.request.UserSignInResponseRequest
+import pl.put.smartgarden.domain.user.dto.request.UserSignInResponse
 import pl.put.smartgarden.domain.user.dto.request.UserSignUpRequest
 import java.time.Instant
 import javax.validation.Valid
@@ -67,7 +67,16 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 403, message = "Unactivated")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun signIn(@RequestBody user: UserSignInRequest): UserSignInResponseRequest = userService.signIn(user)
+    fun signIn(@RequestBody user: UserSignInRequest): UserSignInResponse = userService.signIn(user)
+
+    @PostMapping("/logout")
+    @ApiOperation("Sign out and revoke JWT.")
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "OK"),
+        ApiResponse(code = 400, message = "Bad request")
+    ])
+    @ResponseStatus(HttpStatus.OK)
+    fun signOut(@RequestHeader("Authorization") token: String) = userService.signOut(token)
 
     @GetMapping
     @ApiOperation("Get all users.")
@@ -77,7 +86,7 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 404, message = "Not found")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun getUsers(): List<UserResourceRequest> = userService.getUsers()
+    fun getUsers(): List<UserResourceResponse> = userService.getUsers()
 
     @GetMapping("/me")
     @ApiOperation("Get currently logged user details.")
@@ -87,7 +96,7 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 404, message = "Not found")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun getCurrentUser(@RequestHeader("Authorization") token: String): UserResourceRequest =
+    fun getCurrentUser(@RequestHeader("Authorization") token: String): UserResourceResponse =
         userService.getCurrentUser(token)
 
     @PutMapping("/me/change-password")
@@ -98,9 +107,9 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 404, message = "Not found")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun changePassword(@RequestBody user: UserChangePasswordRequest): UserResourceRequest {
+    fun changePassword(@RequestBody user: UserChangePasswordRequest): UserResourceResponse {
         // TODO
-        return UserResourceRequest("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
+        return UserResourceResponse("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
     }
 
     @PutMapping("/me/change-email")
@@ -111,9 +120,9 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 404, message = "Not found")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun changeEmail(@RequestBody user: UserChangeEmailRequest): UserResourceRequest {
+    fun changeEmail(@RequestBody user: UserChangeEmailRequest): UserResourceResponse {
         // TODO
-        return UserResourceRequest("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
+        return UserResourceResponse("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
     }
 
     @PutMapping("/me/change-username")
@@ -124,9 +133,9 @@ class UserController(val userService: UserService) {
         ApiResponse(code = 404, message = "Not found")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun changeUsername(@RequestBody user: UserChangeUsernameRequest): UserResourceRequest {
+    fun changeUsername(@RequestBody user: UserChangeUsernameRequest): UserResourceResponse {
         // TODO
-        return UserResourceRequest("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
+        return UserResourceResponse("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123")
     }
 
     @GetMapping("/area/{areaId}/measures")
@@ -182,7 +191,7 @@ class UserController(val userService: UserService) {
     fun setLocation(
         @RequestHeader("Authorization") token: String,
         @RequestBody locationRequest: LocationRequest
-    ): UserResourceRequest =
+    ): UserResourceResponse =
         userService.setLocation(token, locationRequest)
 
     @PutMapping("/areas/{areaId}/next-irrigation")
