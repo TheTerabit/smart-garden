@@ -13,8 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-import pl.put.smartgarden.domain.device.Device
-import pl.put.smartgarden.domain.device.DeviceFacade
+import pl.put.smartgarden.domain.device.DeviceService
 import pl.put.smartgarden.domain.device.dto.request.DeviceRequest
 import pl.put.smartgarden.domain.device.dto.response.MeasureResponse
 import pl.put.smartgarden.domain.device.dto.request.MeasureRequest
@@ -25,7 +24,7 @@ import pl.put.smartgarden.domain.device.dto.response.DeviceResponse
 @RestController
 @RequestMapping("/devices")
 class DeviceController(
-    val deviceFacade: DeviceFacade
+    val deviceService: DeviceService
 ) {
     @PutMapping
     @ApiOperation("Create or update device.")
@@ -36,7 +35,7 @@ class DeviceController(
     ])
     @ResponseStatus(HttpStatus.OK)
     fun createOrUpdateDevice(@RequestBody deviceRequest: DeviceRequest): DeviceResponse =
-        deviceFacade.createOrUpdateDevice(deviceRequest)
+        TODO()
 
     @PostMapping("/measures")
     @ApiOperation("Save new measures from device.")
@@ -49,7 +48,7 @@ class DeviceController(
         @RequestBody deviceMeasures: List<MeasureRequest>,
         @RequestHeader("Authorization") token: String
     ): List<MeasureResponse> =
-        deviceFacade.createMeasures(deviceMeasures, token)
+        TODO()
 
     @GetMapping("/irrigation-decisions")
     @ApiOperation("Get decision which areas should be irrigated.")
@@ -59,9 +58,5 @@ class DeviceController(
     ])
     @ResponseStatus(HttpStatus.OK)
     fun getIrrigationDecisions(@RequestHeader("Authorization") token: String): List<AreaDecisionResponse> =
-        deviceFacade.getIrrigationDecisions(token)
-
-    @GetMapping
-    @ApiOperation("TO JEST TYLKO TESTOWY ENDPOINT KTORY WYWALIMY - WOJTEK NIE KORZYSTAJ Z NIEGO xD.")
-    fun getDevices(): List<Device> = deviceFacade.getDevices()
+        TODO()
 }

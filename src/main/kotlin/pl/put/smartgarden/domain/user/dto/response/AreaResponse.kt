@@ -1,8 +1,19 @@
 package pl.put.smartgarden.domain.user.dto.response
 
-import pl.put.smartgarden.domain.device.dto.request.SensorRequest
+import java.time.Instant
 
 data class AreaResponse(
     val id: String,
-    var sensors: List<SensorRequest>
+    val nextWateringTime: Instant,
+    val temperature: Int,
+    val humidity: Int,
+    val illuminance: Int,
+    var temperatureMeasures: List<SensorResponse>,
+    var illuminanceMeasures: List<SensorResponse>,
+    var humidityMeasures: List<SensorResponse>
+)
+
+data class SensorResponse(
+    val timestamp : Instant,
+    val value: Int
 )

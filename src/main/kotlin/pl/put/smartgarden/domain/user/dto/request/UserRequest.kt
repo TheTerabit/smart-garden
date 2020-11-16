@@ -7,7 +7,7 @@ import javax.validation.constraints.Size
 
 data class UserSignUpRequest(
     @field:Size(min = 3, max = 25, message = "{validation.user.username.min}")
-    @field:Pattern(regexp = "^[a-zA-Z]+$", message = "{validation.user.username.letters}")
+    @field:Pattern(regexp = "^[a-zA-Z0-9]+$", message = "{validation.user.username.letters}")
     val username: String,
     @field:Email(message = "{validation.user.email.not-valid}")
     @field:NotBlank(message = "{validation.user.email.not-empty}")
@@ -31,13 +31,6 @@ data class UserSignInResponse(
     val token: String,
     val username: String,
     val id: Int
-)
-
-data class UserResourceResponse(
-    val id: Int,
-    val username: String,
-    val email: String,
-    val deviceGuid: String?
 )
 
 data class UserChangePasswordRequest(

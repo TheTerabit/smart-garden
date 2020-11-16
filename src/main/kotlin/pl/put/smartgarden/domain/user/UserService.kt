@@ -3,18 +3,16 @@ package pl.put.smartgarden.domain.user
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import pl.put.smartgarden.domain.SmartGardenException
-import pl.put.smartgarden.domain.device.DeviceFacade
 import pl.put.smartgarden.domain.device.dto.response.MeasureResponse
 import pl.put.smartgarden.domain.device.dto.response.SensorResponse
 import pl.put.smartgarden.domain.user.dto.request.IrrigationLevelRequest
-import pl.put.smartgarden.domain.user.dto.request.LocationRequest
 import pl.put.smartgarden.domain.user.dto.request.NextIrrigationRequest
-import pl.put.smartgarden.domain.user.dto.request.UserResourceResponse
 import pl.put.smartgarden.domain.user.dto.request.UserSignInRequest
 import pl.put.smartgarden.domain.user.dto.request.UserSignInResponse
 import pl.put.smartgarden.domain.user.dto.request.UserSignUpRequest
 import pl.put.smartgarden.domain.user.dto.response.AreaResponse
 import pl.put.smartgarden.domain.user.dto.response.AreaSettingsResponse
+import pl.put.smartgarden.domain.user.dto.response.UserGeneralSettingsResponse
 import pl.put.smartgarden.domain.user.exception.UserAlreadyExistsException
 import pl.put.smartgarden.domain.user.repository.UserRepository
 import java.time.Instant
@@ -22,26 +20,16 @@ import java.time.Instant
 @Service
 class UserService(
     val securityService: SecurityService,
-    val deviceFacade: DeviceFacade,
+    val deviceService: UserDeviceService,
     val userRepository: UserRepository
 ) {
-
-    fun getUsers(): List<UserResourceResponse> = userRepository.findAll()
-        .map { user ->
-            UserResourceResponse(
-                id = user.id,
-                username = user.username,
-                email = user.email,
-                deviceGuid = user.device?.guid
-            )
-        }
 
     fun signUpUser(userDto: UserSignUpRequest) =
         if (isUserUnique(userDto)) {
             var user = securityService.createUser(userDto)
             user = userRepository.save(user)
 
-            deviceFacade.addUserDevice(userDto.deviceGuid, userDto.latitude, userDto.longitude, user.id)
+            deviceService.createDevice(userDto.deviceGuid, userDto.latitude, userDto.longitude, user.id)
             securityService.sendVerificationEmail(userDto, user)
         } else {
             throw UserAlreadyExistsException("User with this name or email already exists.", HttpStatus.CONFLICT)
@@ -70,50 +58,15 @@ class UserService(
         userRepository.save(user)
     }
 
-    fun getCurrentUser(token: String): UserResourceResponse {
+    fun getUserGeneralSettings(token: String): UserGeneralSettingsResponse {
         val user = securityService.getUserFromJWToken(token)
-        return UserResourceResponse(
-            id = user.id,
+        return UserGeneralSettingsResponse(
             username = user.username,
             email = user.email,
-            deviceGuid = user.device?.guid
+            deviceGuid = user.device?.guid,
+            latitude = user.device?.latitude,
+            longitude = user.device?.longitude
         )
-    }
-
-    fun getAreaMeasures(token: String, areaId: String, from: Instant, to: Instant): List<MeasureResponse> {
-        TODO("Not yet implemented")
-    }
-
-    fun setIrrigationLevel(token: String, areaId: String, irrigationLevelRequest: IrrigationLevelRequest): AreaSettingsResponse {
-        TODO("Not yet implemented")
-    }
-
-    fun getAreasSetting(token: String): List<AreaSettingsResponse> {
-        TODO("Not yet implemented")
-    }
-
-    fun setLocation(token: String, locationRequest: LocationRequest): UserResourceResponse {
-        TODO("Not yet implemented")
-    }
-
-    fun setNextIrrigationTime(token: String, areaId: String, irrigationTimeRequest: NextIrrigationRequest): NextIrrigationRequest {
-        TODO("Not yet implemented")
-    }
-
-    fun irrigateArea(token: String, areaId: String) {
-        TODO("Not yet implemented")
-    }
-
-    fun linkSensorToArea(token: String, areaId: String, sensorId: String): List<AreaResponse> {
-        TODO("Not yet implemented")
-    }
-
-    fun unlinkSensorFromArea(token: String, sensorId: String): List<AreaResponse> {
-        TODO("Not yet implemented")
-    }
-
-    fun getNotLinkedSensors(token: String): List<SensorResponse> {
-        TODO("Not yet implemented")
     }
 
     fun signOut(token: String) {

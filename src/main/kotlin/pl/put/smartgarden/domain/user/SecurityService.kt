@@ -52,6 +52,9 @@ class SecurityService(
         return verificationToken.user
     }
 
+    /**
+     * Checks if token is valid and returns logged in user or throws appropriate exception.
+     */
     fun getUserFromJWToken(token: String): User {
         val tokenValue = if (token.startsWith("Bearer ")) token.substring(7) else token
 
