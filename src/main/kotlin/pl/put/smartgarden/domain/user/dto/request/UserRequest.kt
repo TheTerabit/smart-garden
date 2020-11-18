@@ -13,7 +13,9 @@ data class UserSignUpRequest(
     @field:NotBlank(message = "{validation.user.email.not-empty}")
     val email: String,
     @field:NotBlank(message = "{validation.user.password.not-empty}")
-    val password: String
+    val password: String,
+    @field:NotBlank(message = "{validation.user.deviceGuid.not-empty}")
+    val deviceGuid: String
 )
 
 data class UserSignInRequest(

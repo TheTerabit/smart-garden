@@ -3,8 +3,10 @@ package pl.put.smartgarden.domain.user
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import pl.put.smartgarden.domain.SmartGardenException
+import pl.put.smartgarden.domain.device.Device
 import pl.put.smartgarden.domain.device.dto.response.MeasureResponse
 import pl.put.smartgarden.domain.device.dto.response.SensorResponse
+import pl.put.smartgarden.domain.device.repository.DeviceRepository
 import pl.put.smartgarden.domain.user.dto.response.AreaResponse
 import pl.put.smartgarden.domain.user.dto.response.AreaSettingsResponse
 import pl.put.smartgarden.domain.user.dto.request.IrrigationLevelRequest
@@ -20,8 +22,9 @@ import java.time.Instant
 
 @Service
 class UserService(
-    val securityService: SecurityService,
-    val userRepository: UserRepository
+    val authService: AuthService,
+    val userRepository: UserRepository,
+    val deviceRepository: DeviceRepository
 ) {
 
     fun getUsers(): List<UserResourceResponse> = userRepository.findAll()
@@ -36,9 +39,10 @@ class UserService(
 
     fun signUpUser(userDto: UserSignUpRequest) =
         if (isUserUnique(userDto)) {
-            val user = securityService.createUser(userDto)
+            val user = authService.createUser(userDto)
             userRepository.save(user)
-            securityService.sendVerificationEmail(userDto, user)
+            deviceRepository.save(Device(userDto.deviceGuid, user.id, 0.0,0.0 ))
+            authService.sendVerificationEmail(userDto, user)
         } else {
             throw UserAlreadyExistsException("User with this name or email already exists.", HttpStatus.CONFLICT)
         }
@@ -49,23 +53,22 @@ class UserService(
     fun signIn(userSignInRequest: UserSignInRequest): UserSignInResponse {
         var user = userRepository.findByEmail(userSignInRequest.email)
         user ?: throw SmartGardenException("Bad login or password.", HttpStatus.BAD_REQUEST)
-        user = securityService.validateUserSignIn(user)
+        user = authService.validateUserSignIn(user)
         return UserSignInResponse(
-            token = securityService.generateJsonWebTokenFromUser(user),
-
+            token = authService.generateJsonWebTokenFromUser(user),
             username = user.username,
             id = user.id
         )
     }
 
     fun enableUserIfValid(token: String) {
-        val user = securityService.getUserFromVerificationToken(token)
+        val user = authService.getUserFromVerificationToken(token)
         user.enabled = true
         userRepository.save(user)
     }
 
     fun getCurrentUser(token: String): UserResourceResponse {
-        val user = securityService.getUserFromJWToken(token)
+        val user = authService.getUserFromJWToken(token)
         return UserResourceResponse(
             id = user.id,
             username = user.username,
@@ -111,6 +114,6 @@ class UserService(
     }
 
     fun signOut(token: String) {
-        securityService.revokeToken(token);
+        authService.revokeToken(token);
     }
 }
