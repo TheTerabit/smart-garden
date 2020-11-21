@@ -1,10 +1,13 @@
 package pl.put.smartgarden.domain.device
 
 import org.springframework.stereotype.Service
+import pl.put.smartgarden.domain.device.SensorType.HUMIDITY
+import pl.put.smartgarden.domain.device.SensorType.ILLUMINANCE
+import pl.put.smartgarden.domain.device.SensorType.IRRIGATION
+import pl.put.smartgarden.domain.device.SensorType.TEMPERATURE
 import pl.put.smartgarden.domain.device.dto.request.SensorRequest
 import pl.put.smartgarden.domain.device.exception.SensorInAnotherDeviceException
 import pl.put.smartgarden.domain.device.repository.SensorRepository
-import kotlin.collections.ArrayList
 
 @Service
 class SensorService(val sensorRepository: SensorRepository) {
@@ -43,4 +46,18 @@ class SensorService(val sensorRepository: SensorRepository) {
     }
 
     private fun concatenateLists(vararg lists: List<Sensor>): List<Sensor> = listOf(*lists).flatten()
+
+    fun getUnitBySensorId(sensorId: Int): String {
+        val sensor = sensorRepository.findById(sensorId).get()
+        return when (sensor.type) {
+            IRRIGATION -> "%"
+            ILLUMINANCE -> "lux"
+            HUMIDITY -> "%"
+            TEMPERATURE -> "degrees"
+        }
+    }
+
+    fun getIrrigationSensorsByDeviceId(deviceId: Int): List<Sensor> =
+        sensorRepository.findAllByDeviceId(deviceId).filter { sensor -> sensor.type == IRRIGATION }
+
 }

@@ -37,7 +37,7 @@ class Device(
 @Entity
 @Table(name = "sensors")
 class Sensor(
-    var type: String,
+    var type: SensorType,
     var guid: String,
     @Column(name = "device_id")
     var deviceId: Int
@@ -59,7 +59,6 @@ class Sensor(
 @Table(name = "measures")
 class Measure(
     var timestamp: Instant,
-    var type: String,
     var value: Double,
     @Column(name = "sensor_id")
     var sensorId: Int

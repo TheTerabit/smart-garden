@@ -18,13 +18,16 @@ class SecurityService(
     fun isPasswordMatching(password1: String, password2: String) =
         bCryptPasswordEncoder.matches(password1, password2)
 
-    fun generateJsonWebTokenFromId(id: String): String {
+    fun generateJsonWebTokenFromId(id: Int): String {
         val now = System.currentTimeMillis()
         return Jwts.builder()
-            .setSubject(id)
+            .setSubject(id.toString())
             .claim("roles", "USER")
             .setIssuedAt(Date(now))
             .signWith(SignatureAlgorithm.HS512, secretKey)
             .compact()
     }
+
+    fun getIdFromToken(token: String): Int =
+        Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).body["sub"].toString().toInt()
 }

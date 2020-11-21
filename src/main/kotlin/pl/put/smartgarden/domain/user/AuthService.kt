@@ -69,7 +69,7 @@ class AuthService(
     }
 
     fun generateJsonWebTokenFromUser(user: User): String =
-        securityService.generateJsonWebTokenFromId(user.id.toString())
+        securityService.generateJsonWebTokenFromId(user.id)
 
     fun revokeToken(token: String) {
         if (!revokedTokenRepository.existsById(token))
