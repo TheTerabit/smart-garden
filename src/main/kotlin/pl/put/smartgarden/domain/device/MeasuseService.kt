@@ -11,5 +11,4 @@ class MeasuseService(val measureRepository: MeasureRepository) {
         measureRepository.saveAll(measures)
         return measures
     }
-
 }

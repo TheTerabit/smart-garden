@@ -1,10 +1,7 @@
 package pl.put.smartgarden.domain.device
 
 import org.springframework.stereotype.Service
-import pl.put.smartgarden.domain.device.SensorType.HUMIDITY
-import pl.put.smartgarden.domain.device.SensorType.ILLUMINANCE
 import pl.put.smartgarden.domain.device.SensorType.IRRIGATION
-import pl.put.smartgarden.domain.device.SensorType.TEMPERATURE
 import pl.put.smartgarden.domain.device.dto.request.SensorRequest
 import pl.put.smartgarden.domain.device.exception.SensorInAnotherDeviceException
 import pl.put.smartgarden.domain.device.repository.SensorRepository
@@ -26,14 +23,14 @@ class SensorService(val sensorRepository: SensorRepository) {
     private fun selectActiveSensors(sensorsInDb: List<Sensor>, requestGuids: List<String>) =
         sensorsInDb.filter { requestGuids.contains(it.guid) && it.isActive }
 
-    private fun createNewSensors(sensorsInDb: List<Sensor>, sensors: List<SensorRequest>, deviceId: Int): List<Sensor> {
+    private fun createNewSensors(sensorsInDb: List<Sensor>, sensors: List<SensorRequest>, deviceId: Int): List<Sensor> { // returns new sensors
         val dbGuids: List<String> = sensorsInDb.map { it.guid }
         val newSensors = sensors.filter { !dbGuids.contains(it.guid) }.map { Sensor(it.type, it.guid, deviceId) }
         newSensors.forEach { sensorRepository.save(it) }
         return newSensors
     }
 
-    private fun inactivateNotUsedSensors(sensorsInDb: List<Sensor>, requestGuids: List<String>): List<Sensor> {
+    private fun inactivateNotUsedSensors(sensorsInDb: List<Sensor>, requestGuids: List<String>): List<Sensor> { // returns sensors currently being disabled
         val inactiveSensors = sensorsInDb.filter { !requestGuids.contains(it.guid) && it.isActive }
         inactiveSensors.forEach { it.isActive = false; sensorRepository.save(it) }
         return inactiveSensors
@@ -49,15 +46,9 @@ class SensorService(val sensorRepository: SensorRepository) {
 
     fun getUnitBySensorId(sensorId: Int): String {
         val sensor = sensorRepository.findById(sensorId).get()
-        return when (sensor.type) {
-            IRRIGATION -> "%"
-            ILLUMINANCE -> "lux"
-            HUMIDITY -> "%"
-            TEMPERATURE -> "degrees"
-        }
+        return sensor.type.unit
     }
 
     fun getIrrigationSensorsByDeviceId(deviceId: Int): List<Sensor> =
         sensorRepository.findAllByDeviceId(deviceId).filter { sensor -> sensor.type == IRRIGATION }
-
 }

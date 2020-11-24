@@ -18,9 +18,11 @@ class DeviceFacade(
     val measureService: MeasuseService
 ) {
     fun createOrUpdateDevice(deviceRequest: DeviceRequest): DeviceResponse {
-        val device = deviceService.getDeviceBySecret(deviceRequest.secret)
+        val device = deviceService.getDeviceByGuid(deviceRequest.guid)
         device ?: throw NoSuchDeviceException()
-        val sensors = sensorService.createSensors(device.id, deviceRequest.sensors).filter { it.isActive }.map { SensorResponse(it.id, it.guid) }
+        val sensors = sensorService.createSensors(device.id, deviceRequest.sensors)
+            .filter { it.isActive }
+            .map { SensorResponse(it.id, it.guid) }
         val token = securityService.generateJsonWebTokenFromId(device.id)
         return DeviceResponse(token, sensors)
     }
