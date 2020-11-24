@@ -2,6 +2,7 @@ package pl.put.smartgarden.domain.device
 
 import org.hibernate.annotations.GenericGenerator
 import java.time.Instant
+import java.util.*
 import javax.persistence.CascadeType
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -18,49 +19,49 @@ class Device(
     @Column(name = "user_id")
     var userId: Int,
     var latitude: Double,
-    var longitude: Double,
-    @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
-    @JoinColumn(name = "device_id", referencedColumnName = "id")
-    var sensors: MutableList<Sensor>,
-    @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
-    @JoinColumn(name = "device_id", referencedColumnName = "id")
-    var areas: MutableList<Area>
+    var longitude: Double
 ) {
     @Id
     @Column(name = "id")
     @GeneratedValue(generator="increment")
     @GenericGenerator(name="increment", strategy = "increment")
     var id: Int = 0
+    @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
+    @JoinColumn(name = "device_id", referencedColumnName = "id")
+    var sensors: MutableList<Sensor> = Collections.emptyList()
+    @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
+    @JoinColumn(name = "device_id", referencedColumnName = "id")
+    var areas: MutableList<Area> = Collections.emptyList()
 }
 
 @Entity
 @Table(name = "sensors")
 class Sensor(
-    var type: String,
-    var number: Int,
+    var type: SensorType,
+    var guid: String,
     @Column(name = "device_id")
-    var deviceId: String,
-    @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
-    @JoinColumn(name = "sensor_id", referencedColumnName = "id")
-    var measures: MutableList<Measure>,
-    @Column(name = "area_id")
-    var areaId: String?
+    var deviceId: Int
 ) {
     @Id
     @Column(name = "id")
     @GeneratedValue(generator="increment")
     @GenericGenerator(name="increment", strategy = "increment")
     var id: Int = 0
+    var isActive: Boolean = true
+    @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
+    @JoinColumn(name = "sensor_id", referencedColumnName = "id")
+    var measures: MutableList<Measure> = Collections.emptyList()
+    @Column(name = "area_id")
+    var areaId: Int? = null
 }
 
 @Entity
 @Table(name = "measures")
 class Measure(
     var timestamp: Instant,
-    var type: String,
     var value: Double,
     @Column(name = "sensor_id")
-    var sensorId: String
+    var sensorId: Int
 ) {
     @Id
     @Column(name = "id")
@@ -74,7 +75,7 @@ class Measure(
 class Area(
     var settings: String,//TODO("Not yet implemented")
     @Column(name = "device_id")
-    var deviceId: String,
+    var deviceId: Int,
     @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
     @JoinColumn(name = "area_id", referencedColumnName = "id")
     var sensors: MutableList<Sensor>,
@@ -94,7 +95,7 @@ class Area(
 class Irrigation(
     var timestamp: Instant,
     @Column(name = "area_id")
-    var areaId: String,
+    var areaId: Int,
     var planned: Boolean
 ) {
     @Id

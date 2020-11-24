@@ -1,27 +1,26 @@
 package pl.put.smartgarden.domain.user
 
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import pl.put.smartgarden.domain.SmartGardenException
 import pl.put.smartgarden.domain.user.dto.request.UserSignUpRequest
 import pl.put.smartgarden.domain.user.repository.RevokedTokenRepository
 import pl.put.smartgarden.domain.user.repository.UserRepository
 import pl.put.smartgarden.domain.user.repository.VerificationTokenRepository
-import java.util.Date
+import pl.put.smartgarden.domain.SecurityService
+import pl.put.smartgarden.domain.device.Device
 
 @Service
-class SecurityService(
+class AuthService(
     val mailService: MailService,
     val userRepository: UserRepository,
     val verificationTokenRepository: VerificationTokenRepository,
     val revokedTokenRepository: RevokedTokenRepository,
-    val bCryptPasswordEncoder: BCryptPasswordEncoder,
+    val securityService: SecurityService,
     @Value("\${jwt-secret-key}") val secretKey: String,
     @Value("\${is-user-enabled-by-default}") val isUserEnabledByDefault: Boolean
 ) {
@@ -30,7 +29,7 @@ class SecurityService(
             username = userDto.username,
             enabled = isUserEnabledByDefault,
             email = userDto.email,
-            password = bCryptPasswordEncoder.encode(userDto.password)
+            password = securityService.encodePassword(userDto.password)
         )
 
     fun sendVerificationEmail(userDto: UserSignUpRequest, user: User) {
@@ -43,7 +42,7 @@ class SecurityService(
     }
 
     fun validateUserPassword(password: String, passwordEncoded : String) {
-        if (!bCryptPasswordEncoder.matches(password, passwordEncoded)) throw SmartGardenException("Bad login or password.", HttpStatus.BAD_REQUEST)
+        if (!securityService.isPasswordMatching(password, passwordEncoded)) throw SmartGardenException("Bad login or password.", HttpStatus.BAD_REQUEST)
     }
 
     fun getUserFromVerificationToken(token: String): User {
@@ -72,15 +71,8 @@ class SecurityService(
         return user.get()
     }
 
-    fun generateJsonWebTokenFromUser(user: User): String {
-        val now = System.currentTimeMillis()
-        return Jwts.builder()
-            .setSubject(user.id.toString())
-            .claim("roles", "USER")
-            .setIssuedAt(Date(now))
-            .signWith(SignatureAlgorithm.HS512, secretKey)
-            .compact()
-    }
+    fun generateJsonWebTokenFromUser(user: User): String =
+        securityService.generateJsonWebTokenFromId(user.id)
 
     fun revokeToken(token: String) {
         if (!revokedTokenRepository.existsById(token))

@@ -14,7 +14,7 @@ data class UserSignUpRequest(
     val email: String,
     @field:NotBlank(message = "{validation.user.password.not-empty}")
     val password: String,
-    @field:NotBlank(message = "{validation.user.device.not-empty}")
+    @field:NotBlank(message = "{validation.user.deviceGuid.not-empty}")
     val deviceGuid: String,
     @field:NotBlank(message = "{validation.user.location.not-empty}")
     val longitude: Double,

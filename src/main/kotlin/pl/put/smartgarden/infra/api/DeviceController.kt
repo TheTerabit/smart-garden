@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-import pl.put.smartgarden.domain.device.DeviceService
+import pl.put.smartgarden.domain.device.DeviceFacade
 import pl.put.smartgarden.domain.device.dto.request.DeviceRequest
 import pl.put.smartgarden.domain.device.dto.response.MeasureResponse
 import pl.put.smartgarden.domain.device.dto.request.MeasureRequest
@@ -24,7 +24,7 @@ import pl.put.smartgarden.domain.device.dto.response.DeviceResponse
 @RestController
 @RequestMapping("/devices")
 class DeviceController(
-    val deviceService: DeviceService
+    val deviceFacade: DeviceFacade
 ) {
     @PutMapping
     @ApiOperation("Create or update device.")
@@ -35,7 +35,7 @@ class DeviceController(
     ])
     @ResponseStatus(HttpStatus.OK)
     fun createOrUpdateDevice(@RequestBody deviceRequest: DeviceRequest): DeviceResponse =
-        TODO()
+        deviceFacade.createOrUpdateDevice(deviceRequest)
 
     @PostMapping("/measures")
     @ApiOperation("Save new measures from device.")
@@ -48,7 +48,7 @@ class DeviceController(
         @RequestBody deviceMeasures: List<MeasureRequest>,
         @RequestHeader("Authorization") token: String
     ): List<MeasureResponse> =
-        TODO()
+        deviceFacade.createMeasures(deviceMeasures, token)
 
     @GetMapping("/irrigation-decisions")
     @ApiOperation("Get decision which areas should be irrigated.")
@@ -58,5 +58,5 @@ class DeviceController(
     ])
     @ResponseStatus(HttpStatus.OK)
     fun getIrrigationDecisions(@RequestHeader("Authorization") token: String): List<AreaDecisionResponse> =
-        TODO()
+        deviceFacade.getIrrigationDecisions(token)
 }

@@ -5,4 +5,7 @@ import org.springframework.stereotype.Repository
 import pl.put.smartgarden.domain.device.Sensor
 
 @Repository
-interface SensorRepository : JpaRepository<Sensor, Int>
+interface SensorRepository : JpaRepository<Sensor, Int> {
+    fun findAllByDeviceId(deviceId: Int): List<Sensor>
+    fun findAllByGuidIn(guids: List<String>): List<Sensor>
+}
