@@ -112,7 +112,7 @@ class SensorServiceTest extends Specification {
         }
     }
 
-    def "should not create sensors because a sensor already belongs to another device"() {
+    def "should not create sensors when a sensor already belongs to another device"() {
         given:
         def sensorRequest1 = new SensorRequest(HUMIDITY, "w4e6r6t6cr5xe4w3z54e65r6t7yt7r56e")
         def sensorRequest2 = new SensorRequest(IRRIGATION, "edhh2387gfd782gf7834gf863g467fg67w")

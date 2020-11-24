@@ -15,8 +15,8 @@ class SecurityService(
     fun encodePassword(password: String) =
         bCryptPasswordEncoder.encode(password)
 
-    fun isPasswordMatching(password1: String, password2: String) =
-        bCryptPasswordEncoder.matches(password1, password2)
+    fun isPasswordMatching(rawPassword: String, encodedPassword: String) =
+        bCryptPasswordEncoder.matches(rawPassword, encodedPassword)
 
     fun generateJsonWebTokenFromId(id: Int): String {
         val now = System.currentTimeMillis()

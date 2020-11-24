@@ -26,7 +26,7 @@ class DeviceFacadeTest extends Specification {
         def sensorResponse = new SensorResponse(1, "dafergmjuyrhtgrfeadwefshjk")
         def device = new Device("dafergmjuyrhtgrfeadwefshjk", 1, 0, 0)
         device.id = 23
-        deviceService.getDeviceBySecret(deviceRequest.secret) >> device
+        deviceService.getDeviceByGuid(deviceRequest.guid) >> device
         sensorService.createSensors(23, deviceRequest.sensors) >> [sensor]
         securityService.generateJsonWebTokenFromId(23) >> "ef1231313ewfewun21uneu12nu214un421un3u13n2un31u3nu131=="
 

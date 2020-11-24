@@ -2,7 +2,7 @@ package pl.put.smartgarden.domain.device
 
 import org.hibernate.annotations.GenericGenerator
 import java.time.Instant
-import java.util.*
+import java.util.Collections
 import javax.persistence.CascadeType
 import javax.persistence.Column
 import javax.persistence.Entity
