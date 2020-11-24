@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-import pl.put.smartgarden.domain.device.Device
 import pl.put.smartgarden.domain.device.DeviceFacade
 import pl.put.smartgarden.domain.device.dto.request.DeviceRequest
 import pl.put.smartgarden.domain.device.dto.response.MeasureResponse
@@ -60,8 +59,4 @@ class DeviceController(
     @ResponseStatus(HttpStatus.OK)
     fun getIrrigationDecisions(@RequestHeader("Authorization") token: String): List<AreaDecisionResponse> =
         deviceFacade.getIrrigationDecisions(token)
-
-    @GetMapping
-    @ApiOperation("TO JEST TYLKO TESTOWY ENDPOINT KTORY WYWALIMY - WOJTEK NIE KORZYSTAJ Z NIEGO xD.")
-    fun getDevices(): List<Device> = deviceFacade.getDevices()
 }
