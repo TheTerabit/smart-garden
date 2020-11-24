@@ -29,8 +29,7 @@ data class UserSignInRequest(
 
 data class UserSignInResponse(
     val token: String,
-    val username: String,
-    val id: Int
+    val username: String
 )
 
 data class UserChangePasswordRequest(

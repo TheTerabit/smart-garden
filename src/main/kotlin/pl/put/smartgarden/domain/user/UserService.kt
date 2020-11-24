@@ -3,29 +3,18 @@ package pl.put.smartgarden.domain.user
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import pl.put.smartgarden.domain.SmartGardenException
-import pl.put.smartgarden.domain.device.Device
-import pl.put.smartgarden.domain.device.dto.response.MeasureResponse
-import pl.put.smartgarden.domain.device.dto.response.SensorResponse
-import pl.put.smartgarden.domain.device.repository.DeviceRepository
-import pl.put.smartgarden.domain.user.dto.response.AreaResponse
-import pl.put.smartgarden.domain.user.dto.response.AreaSettingsResponse
-import pl.put.smartgarden.domain.user.dto.request.IrrigationLevelRequest
-import pl.put.smartgarden.domain.user.dto.request.NextIrrigationRequest
 import pl.put.smartgarden.domain.user.dto.request.UserSignInRequest
 import pl.put.smartgarden.domain.user.dto.request.UserSignInResponse
 import pl.put.smartgarden.domain.user.dto.request.UserSignUpRequest
-import pl.put.smartgarden.domain.user.dto.response.AreaResponse
-import pl.put.smartgarden.domain.user.dto.response.AreaSettingsResponse
 import pl.put.smartgarden.domain.user.dto.response.UserGeneralSettingsResponse
 import pl.put.smartgarden.domain.user.exception.UserAlreadyExistsException
 import pl.put.smartgarden.domain.user.repository.UserRepository
-import java.time.Instant
 
 @Service
 class UserService(
-    val authService: AuthService,
-    val deviceService: UserDeviceService,
-    val userRepository: UserRepository
+    private val authService: UserAuthService,
+    private val deviceService: UserDeviceService,
+    private val userRepository: UserRepository
 ) {
 
     fun signUpUser(userDto: UserSignUpRequest) =
@@ -47,12 +36,12 @@ class UserService(
 
         user ?: throw SmartGardenException("Bad login or password.", HttpStatus.BAD_REQUEST)
         if (!user.enabled) throw SmartGardenException("Account is not enabled.", HttpStatus.UNAUTHORIZED)
-        authService.validateUserPassword(userSignInRequest.password, user.password)
+        if (!authService.isUserPasswordCorrect(userSignInRequest.password, user.password))
+            throw SmartGardenException("Bad login or password.", HttpStatus.BAD_REQUEST)
 
         return UserSignInResponse(
             token = authService.generateJsonWebTokenFromUser(user),
-            username = user.username,
-            id = user.id
+            username = user.username
         )
     }
 

@@ -16,7 +16,7 @@ import java.time.Instant
 @Service
 class UserDeviceService(
     val deviceRepository: DeviceRepository,
-    val securityService: SecurityService
+    val authService: UserAuthService
 ) {
 
     fun createDevice(deviceGuid: String, latitude: Double, longitude: Double, userId: Int) {
@@ -24,9 +24,7 @@ class UserDeviceService(
             guid = deviceGuid,
             latitude = latitude,
             longitude = longitude,
-            userId = userId,
-            sensors = mutableListOf(),
-            areas = mutableListOf()
+            userId = userId
         )
 
         deviceRepository.save(device)
@@ -35,7 +33,7 @@ class UserDeviceService(
     fun saveDevice(device: Device) = deviceRepository.save(device)
 
     fun setDeviceLocation(token: String, locationRequest: LocationRequest): UserGeneralSettingsResponse {
-        val user = securityService.getUserFromJWToken(token)
+        val user = authService.getUserFromJWToken(token)
         val device = user.device
         device?.latitude = locationRequest.latitude
         device?.longitude = locationRequest.longitude

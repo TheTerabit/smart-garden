@@ -21,11 +21,11 @@ import pl.put.smartgarden.domain.user.dto.request.UserSignInResponse
 import pl.put.smartgarden.domain.user.dto.request.UserSignUpRequest
 import javax.validation.Valid
 
-@Api(description = "Users api")
+@Api(description = "Users authorization api")
 @RestController
 @RequestMapping("/users")
-class UserController(
-    val userService: UserService
+class UserAuthController(
+    private val userService: UserService
 ) {
     @PostMapping
     @ApiOperation("Create new user account.")

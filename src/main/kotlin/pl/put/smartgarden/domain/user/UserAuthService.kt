@@ -15,7 +15,7 @@ import pl.put.smartgarden.domain.SecurityService
 import pl.put.smartgarden.domain.device.Device
 
 @Service
-class AuthService(
+class UserAuthService(
     val mailService: MailService,
     val userRepository: UserRepository,
     val verificationTokenRepository: VerificationTokenRepository,
@@ -41,8 +41,8 @@ class AuthService(
             }
     }
 
-    fun validateUserPassword(password: String, passwordEncoded : String) {
-        if (!securityService.isPasswordMatching(password, passwordEncoded)) throw SmartGardenException("Bad login or password.", HttpStatus.BAD_REQUEST)
+    fun isUserPasswordCorrect(password: String, passwordEncoded : String) : Boolean {
+        return securityService.isPasswordMatching(password, passwordEncoded)
     }
 
     fun getUserFromVerificationToken(token: String): User {
