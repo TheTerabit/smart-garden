@@ -19,7 +19,7 @@ class UserDeviceService(
     val authService: UserAuthService
 ) {
 
-    fun createDevice(deviceGuid: String, latitude: Double, longitude: Double, userId: Int) {
+    fun createAndSaveDevice(deviceGuid: String, latitude: Double, longitude: Double, userId: Int) {
         val device = Device(
             guid = deviceGuid,
             latitude = latitude,

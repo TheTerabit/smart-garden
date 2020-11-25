@@ -9,7 +9,6 @@ import pl.put.smartgarden.domain.user.repository.RevokedTokenRepository
 import pl.put.smartgarden.domain.user.repository.UserRepository
 import pl.put.smartgarden.domain.user.repository.VerificationTokenRepository
 import spock.lang.Specification
-import java.util.Date
 
 class UserAuthServiceTest extends Specification {
     def mailService = Mock(MailService)
@@ -117,7 +116,7 @@ class UserAuthServiceTest extends Specification {
         result == user
     }
 
-    def "Should not retrieve user from json web token when it is revoked"() {
+    def "Should not retrieve user from json web token when it was revoked"() {
         given: "token with subject set to 123, encoded with secretKey and HS512 algorithm"
         def token = Jwts.builder()
                 .setSubject(123.toString())

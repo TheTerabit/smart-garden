@@ -39,7 +39,7 @@ class UserServiceTest extends Specification {
         userService.signUpUser(userDto)
 
         then:
-        1 * deviceService.createDevice(userDto.deviceGuid, userDto.latitude, userDto.longitude, userWithId.id)
+        1 * deviceService.createAndSaveDevice(userDto.deviceGuid, userDto.latitude, userDto.longitude, userWithId.id)
         1 * authService.sendVerificationEmail(userDto, userWithId)
     }
 

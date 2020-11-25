@@ -4,7 +4,7 @@ import javax.validation.constraints.NotBlank
 
 class LocationRequest(
     @field:NotBlank(message = "{validation.user.location.not-empty}")
-    val longitude: Double,
+    val latitude: Double,
     @field:NotBlank(message = "{validation.user.location.not-empty}")
-    val latitude: Double
+    val longitude: Double
 )
