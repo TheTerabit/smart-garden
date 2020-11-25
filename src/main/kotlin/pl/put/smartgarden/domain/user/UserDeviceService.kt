@@ -19,7 +19,7 @@ class UserDeviceService(
     val authService: UserAuthService
 ) {
 
-    fun createAndSaveDevice(deviceGuid: String, latitude: Double, longitude: Double, userId: Int) {
+    fun createAndSaveDevice(deviceGuid: String, latitude: Double, longitude: Double, userId: Int) : Device {
         val device = Device(
             guid = deviceGuid,
             latitude = latitude,
@@ -27,10 +27,10 @@ class UserDeviceService(
             userId = userId
         )
 
-        deviceRepository.save(device)
+        return deviceRepository.save(device)
     }
 
-    fun saveDevice(device: Device) = deviceRepository.save(device)
+    fun saveDevice(device: Device) : Device = deviceRepository.save(device)
 
     fun setDeviceLocation(token: String, locationRequest: LocationRequest): UserGeneralSettingsResponse {
         val user = authService.getUserFromJWToken(token)

@@ -54,7 +54,7 @@ class JwtFilter : Filter {
 
     override fun doFilter(servletRequest: ServletRequest, servletResponse: ServletResponse, filterChain: FilterChain) {
         val httpServletRequest = servletRequest as HttpServletRequest
-        val header = httpServletRequest.getHeader("authorization")
+        val header = httpServletRequest.getHeader("Authorization")
         if (header == null || !header.startsWith("Bearer ")) {
             throw SmartGardenException("Missing or invalid Authorization header", HttpStatus.UNAUTHORIZED)
         } else {

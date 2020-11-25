@@ -17,29 +17,32 @@ class UserDeviceServiceTest extends Specification {
         def latitude = 12.3
         def longitude = 52.5
         def userId = 9
-
-        when:
-        userDeviceService.createAndSaveDevice(deviceGuid, latitude, longitude, userId)
-
-        then:
-        1 * deviceRepository.save({
-                    it.getClass() == Device &&
+        def device = new Device(deviceGuid, userId, latitude, longitude)
+        deviceRepository.save({
+            it.getClass() == Device &&
                     it.guid == deviceGuid &&
                     it.latitude == latitude &&
                     it.longitude == longitude &&
                     it.userId == userId
-        })
+        }) >> device
+
+        when:
+        def result = userDeviceService.createAndSaveDevice(deviceGuid, latitude, longitude, userId)
+
+        then:
+        result == device
     }
 
     def "Should save device"() {
         given:
         def device = new Device("deviceGuid", 10, 12.3, 45.6)
+        deviceRepository.save(device) >> device
 
         when:
-        userDeviceService.saveDevice(device)
+        def result = userDeviceService.saveDevice(device)
 
         then:
-        1 * deviceRepository.save(device)
+        result == device
     }
 
     def "Should save device location"() {

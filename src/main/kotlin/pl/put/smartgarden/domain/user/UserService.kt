@@ -22,7 +22,10 @@ class UserService(
             var user = authService.createUser(userDto)
             user = userRepository.save(user)
 
-            deviceService.createAndSaveDevice(userDto.deviceGuid, userDto.latitude, userDto.longitude, user.id)
+            val device = deviceService.createAndSaveDevice(userDto.deviceGuid, userDto.latitude, userDto.longitude, user.id)
+            user.device = device
+            userRepository.saveAndFlush(user)
+
             authService.sendVerificationEmail(userDto, user)
         } else {
             throw UserAlreadyExistsException("User with this name or email already exists.", HttpStatus.CONFLICT)

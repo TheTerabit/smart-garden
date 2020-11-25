@@ -2,6 +2,7 @@ package pl.put.smartgarden.domain.user.dto.request
 
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank
+import javax.validation.constraints.NotNull
 import javax.validation.constraints.Pattern
 import javax.validation.constraints.Size
 
@@ -16,9 +17,9 @@ data class UserSignUpRequest(
     val password: String,
     @field:NotBlank(message = "{validation.user.deviceGuid.not-empty}")
     val deviceGuid: String,
-    @field:NotBlank(message = "{validation.user.location.not-empty}")
+    @field:NotNull(message = "{validation.user.location.not-empty}")
     val longitude: Double,
-    @field:NotBlank(message = "{validation.user.location.not-empty}")
+    @field:NotNull(message = "{validation.user.location.not-empty}")
     val latitude: Double
 )
 

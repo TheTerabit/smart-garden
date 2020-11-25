@@ -1,7 +1,6 @@
 package pl.put.smartgarden.domain.user
 
 import org.springframework.mail.javamail.JavaMailSender
-import spock.lang.Ignore
 import spock.lang.Specification
 
 class MailServiceTest extends Specification {
