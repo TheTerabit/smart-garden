@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletRequest
 @Configuration
 @EnableWebSecurity
 @EnableEncryptableProperties
-class SecurityConfigurationn : WebSecurityConfigurerAdapter() {
+class SecurityConfiguration : WebSecurityConfigurerAdapter() {
 
     override fun configure(http: HttpSecurity) {
         http.csrf().disable()
