@@ -1,10 +1,10 @@
 package pl.put.smartgarden.domain.user.dto.request
 
-import javax.validation.constraints.NotBlank
+import javax.validation.constraints.NotNull
 
 class LocationRequest(
-    @field:NotBlank(message = "{validation.user.location.not-empty}")
+    @field:NotNull(message = "{validation.user.location.not-empty}")
     val latitude: Double,
-    @field:NotBlank(message = "{validation.user.location.not-empty}")
+    @field:NotNull(message = "{validation.user.location.not-empty}")
     val longitude: Double
 )

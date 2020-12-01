@@ -6,13 +6,12 @@ import kotlinx.coroutines.async
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import pl.put.smartgarden.domain.SecurityService
 import pl.put.smartgarden.domain.SmartGardenException
 import pl.put.smartgarden.domain.user.dto.request.UserSignUpRequest
 import pl.put.smartgarden.domain.user.repository.RevokedTokenRepository
 import pl.put.smartgarden.domain.user.repository.UserRepository
 import pl.put.smartgarden.domain.user.repository.VerificationTokenRepository
-import pl.put.smartgarden.domain.SecurityService
-import pl.put.smartgarden.domain.device.Device
 
 @Service
 class UserAuthService(
@@ -26,11 +25,11 @@ class UserAuthService(
 ) {
 
     fun createUser(userDto: UserSignUpRequest): User = User(
-            username = userDto.username,
-            enabled = isUserEnabledByDefault,
-            email = userDto.email,
-            password = securityService.encodePassword(userDto.password)
-        )
+        username = userDto.username,
+        enabled = isUserEnabledByDefault,
+        email = userDto.email,
+        password = securityService.encodePassword(userDto.password)
+    )
 
     fun sendVerificationEmail(userDto: UserSignUpRequest, user: User) {
         if (!isUserEnabledByDefault)
@@ -41,7 +40,7 @@ class UserAuthService(
             }
     }
 
-    fun isUserPasswordCorrect(password: String, passwordEncoded : String) : Boolean {
+    fun isUserPasswordCorrect(password: String, passwordEncoded: String): Boolean {
         return securityService.isPasswordMatching(password, passwordEncoded)
     }
 

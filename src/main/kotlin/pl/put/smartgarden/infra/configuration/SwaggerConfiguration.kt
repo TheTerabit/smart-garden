@@ -2,6 +2,7 @@ package pl.put.smartgarden.infra.configuration
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.web.bind.annotation.RestController
 import springfox.documentation.builders.PathSelectors
 import springfox.documentation.builders.RequestHandlerSelectors
 import springfox.documentation.service.ApiKey
@@ -21,7 +22,7 @@ class SwaggerConfiguration {
         .securitySchemes(mutableListOf(apiKey()))
         .securityContexts(mutableListOf(securityContext()))
         .select()
-        .apis(RequestHandlerSelectors.any())
+        .apis(RequestHandlerSelectors.withClassAnnotation(RestController::class.java))
         .paths(PathSelectors.any())
         .build()
         .useDefaultResponseMessages(false)
