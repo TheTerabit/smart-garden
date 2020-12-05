@@ -70,7 +70,7 @@ class UserService(
         authService.revokeToken(token);
     }
 
-    fun getUserById(id: Int): User {
+    private fun getUserById(id: Int): User {
         val userOptional = userRepository.findById(id)
 
         if (!userOptional.isPresent) throw SmartGardenException("Invalid token", HttpStatus.UNAUTHORIZED)

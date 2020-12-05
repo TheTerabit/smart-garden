@@ -1,6 +1,8 @@
 package pl.put.smartgarden.domain.user
 
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import pl.put.smartgarden.domain.SmartGardenException
 import pl.put.smartgarden.domain.device.Device
 import pl.put.smartgarden.domain.device.dto.response.MeasureResponse
 import pl.put.smartgarden.domain.device.dto.response.SensorResponse
@@ -17,7 +19,7 @@ import java.time.Instant
 @Service
 class UserDeviceService(
     val deviceRepository: DeviceRepository,
-    val userService: UserService
+    val userRepository: UserRepository
 ) {
 
     fun createAndSaveDevice(deviceGuid: String, latitude: Double, longitude: Double, userId: Int) : Device {
@@ -34,7 +36,7 @@ class UserDeviceService(
     fun saveDevice(device: Device) : Device = deviceRepository.save(device)
 
     fun setDeviceLocation(userId: Int, locationRequest: LocationRequest): UserGeneralSettingsResponse {
-        val user = userService.getUserById(userId)
+        val user = getUserById(userId)
 
         val device = user.device
         device?.latitude = locationRequest.latitude
@@ -85,5 +87,13 @@ class UserDeviceService(
 
     fun getAvailableAreas() : List<AreaResponse> {
         TODO()
+    }
+
+    private fun getUserById(id: Int): User {
+        val userOptional = userRepository.findById(id)
+
+        if (!userOptional.isPresent) throw SmartGardenException("Invalid token", HttpStatus.UNAUTHORIZED)
+
+        return userOptional.get()
     }
 }
