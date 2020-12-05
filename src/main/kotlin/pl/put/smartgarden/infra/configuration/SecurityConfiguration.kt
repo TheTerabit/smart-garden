@@ -28,8 +28,8 @@ class SecurityConfiguration : WebSecurityConfigurerAdapter() {
     override fun configure(http: HttpSecurity) {
         http.csrf().disable()
             .authorizeRequests()
-            .antMatchers("/*")
-            .permitAll()
+            .antMatchers("/v2/api-docs", "/configuration/ui", "/swagger-resources/**", "/configuration/**", "/swagger-ui.html", "/webjars/**").permitAll()
+            .antMatchers("/users", "/users/login", "/users/logout", "/users/sign-up-confirmation").permitAll()
     }
 
     @Bean
@@ -39,7 +39,8 @@ class SecurityConfiguration : WebSecurityConfigurerAdapter() {
     fun filterRegistrationBean(filter: JwtFilter): FilterRegistrationBean<Filter> {
         val filterRegistrationBean = FilterRegistrationBean<Filter>()
         filterRegistrationBean.filter = filter
-        filterRegistrationBean.urlPatterns = listOf("/users/me", "/users/me/*")
+        filterRegistrationBean.addUrlPatterns("/users/me")
+        filterRegistrationBean.order = 1
         return filterRegistrationBean
     }
 
@@ -58,19 +59,17 @@ class JwtFilter : Filter {
         if (header == null || !header.startsWith("Bearer ")) {
             throw SmartGardenException("Missing or invalid Authorization header", HttpStatus.UNAUTHORIZED)
         } else {
-            setServletRequestClaims(header, servletRequest)
+            try {
+                val token = header.substring(7)
+                val claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).body
+                servletRequest.setAttribute("userId", claims["sub"])
+                servletRequest.setAttribute("roles", claims["roles"])
+                servletRequest.setAttribute("token", token)
+            } catch (e: SignatureException) {
+                throw SmartGardenException("Invalid token", HttpStatus.UNAUTHORIZED)
+            }
         }
 
         filterChain.doFilter(servletRequest, servletResponse)
-    }
-
-    private fun setServletRequestClaims(header: String, servletRequest: ServletRequest) {
-        try {
-            val token = header.substring(7)
-            val claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).body
-            servletRequest.setAttribute("claims", claims)
-        } catch (e: SignatureException) {
-            throw SmartGardenException("Invalid token", HttpStatus.UNAUTHORIZED)
-        }
     }
 }

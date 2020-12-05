@@ -50,26 +50,6 @@ class UserAuthService(
         return verificationToken.user
     }
 
-    /**
-     * Checks if token is valid and returns logged in user or throws appropriate exception.
-     */
-    fun getUserFromJWToken(token: String): User {
-        val tokenValue = if (token.startsWith("Bearer ")) token.substring(7) else token
-
-        if (revokedTokenRepository.existsById(tokenValue))
-            throw SmartGardenException("Bad token", HttpStatus.UNAUTHORIZED)
-
-        val claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(tokenValue).body
-        val userId = claims["sub"].toString().toIntOrNull()
-        userId ?: throw SmartGardenException("Bad token", HttpStatus.UNAUTHORIZED)
-
-        val user = userRepository.findById(userId)
-
-        if (!user.isPresent) throw SmartGardenException("Bad token", HttpStatus.UNAUTHORIZED)
-
-        return user.get()
-    }
-
     fun generateJsonWebTokenFromUser(user: User): String =
         securityService.generateJsonWebTokenFromId(user.id)
 

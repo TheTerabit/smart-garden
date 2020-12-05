@@ -2,11 +2,13 @@ package pl.put.smartgarden.infra.api
 
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestAttribute
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
@@ -19,6 +21,7 @@ import pl.put.smartgarden.domain.user.dto.request.UserChangeEmailRequest
 import pl.put.smartgarden.domain.user.dto.request.UserChangePasswordRequest
 import pl.put.smartgarden.domain.user.dto.request.UserChangeUsernameRequest
 import pl.put.smartgarden.domain.user.dto.response.UserGeneralSettingsResponse
+import javax.servlet.http.HttpServletRequest
 
 @Api(description = "User general settings API")
 @RestController
@@ -35,8 +38,9 @@ class UserGeneralSettingsController(
         ApiResponse(code = 404, message = "Not found")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun getCurrentUser(@RequestHeader("Authorization") token: String): UserGeneralSettingsResponse =
-        userService.getUserGeneralSettings(token)
+    fun getCurrentUser(@ApiParam(hidden = true) @RequestAttribute("userId") userId: Int): UserGeneralSettingsResponse {
+        return userService.getUserGeneralSettings(userId)
+    }
 
     @PutMapping("/change-password")
     @ApiOperation("Change currently logged user password.")
@@ -48,7 +52,7 @@ class UserGeneralSettingsController(
     @ResponseStatus(HttpStatus.OK)
     fun changePassword(@RequestBody user: UserChangePasswordRequest): UserGeneralSettingsResponse {
         // TODO
-        return UserGeneralSettingsResponse( "nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123", 12.3, 12.3)
+        return UserGeneralSettingsResponse("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123", 12.3, 12.3)
     }
 
     @PutMapping("/change-email")
@@ -74,7 +78,7 @@ class UserGeneralSettingsController(
     @ResponseStatus(HttpStatus.OK)
     fun changeUsername(@RequestBody user: UserChangeUsernameRequest): UserGeneralSettingsResponse {
         // TODO
-        return UserGeneralSettingsResponse( "nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123", 111.2, 53.1)
+        return UserGeneralSettingsResponse("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123", 111.2, 53.1)
     }
 
     @PutMapping("/location")
@@ -86,8 +90,8 @@ class UserGeneralSettingsController(
     ])
     @ResponseStatus(HttpStatus.OK)
     fun changeLocation(
-        @RequestHeader("Authorization") token: String,
+        @ApiParam(hidden = true) @RequestAttribute("userId") userId: Int,
         @RequestBody locationRequest: LocationRequest
     ): UserGeneralSettingsResponse =
-        userDeviceService.setDeviceLocation(token, locationRequest)
+        userDeviceService.setDeviceLocation(userId, locationRequest)
 }

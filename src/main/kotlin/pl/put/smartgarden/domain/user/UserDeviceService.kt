@@ -11,12 +11,13 @@ import pl.put.smartgarden.domain.user.dto.request.NextIrrigationRequest
 import pl.put.smartgarden.domain.user.dto.response.AreaResponse
 import pl.put.smartgarden.domain.user.dto.response.AreaSettingsResponse
 import pl.put.smartgarden.domain.user.dto.response.UserGeneralSettingsResponse
+import pl.put.smartgarden.domain.user.repository.UserRepository
 import java.time.Instant
 
 @Service
 class UserDeviceService(
     val deviceRepository: DeviceRepository,
-    val authService: UserAuthService
+    val userRepository: UserRepository
 ) {
 
     fun createAndSaveDevice(deviceGuid: String, latitude: Double, longitude: Double, userId: Int) : Device {
@@ -32,8 +33,9 @@ class UserDeviceService(
 
     fun saveDevice(device: Device) : Device = deviceRepository.save(device)
 
-    fun setDeviceLocation(token: String, locationRequest: LocationRequest): UserGeneralSettingsResponse {
-        val user = authService.getUserFromJWToken(token)
+    fun setDeviceLocation(userId: Int, locationRequest: LocationRequest): UserGeneralSettingsResponse {
+        val user = userRepository.getUserById(userId)
+
         val device = user.device
         device?.latitude = locationRequest.latitude
         device?.longitude = locationRequest.longitude

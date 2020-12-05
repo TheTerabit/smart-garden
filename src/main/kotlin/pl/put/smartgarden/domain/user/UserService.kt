@@ -54,8 +54,9 @@ class UserService(
         userRepository.save(user)
     }
 
-    fun getUserGeneralSettings(token: String): UserGeneralSettingsResponse {
-        val user = authService.getUserFromJWToken(token)
+    fun getUserGeneralSettings(userId: Int): UserGeneralSettingsResponse {
+        val user = userRepository.getUserById(userId)
+
         return UserGeneralSettingsResponse(
             username = user.username,
             email = user.email,

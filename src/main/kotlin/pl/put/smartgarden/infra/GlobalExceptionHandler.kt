@@ -61,6 +61,7 @@ class GlobalErrorController : ErrorController {
         if (request.getAttribute("javax.servlet.error.exception") != null) {
             throw (request.getAttribute("javax.servlet.error.exception") as Throwable)
         }
+        throw SmartGardenException("Unknown exception", HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     override fun getErrorPath(): String? = null
