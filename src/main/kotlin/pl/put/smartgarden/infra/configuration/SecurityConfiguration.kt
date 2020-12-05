@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletRequest
 class SecurityConfiguration : WebSecurityConfigurerAdapter() {
 
     override fun configure(http: HttpSecurity) {
-        http.csrf().disable()
+        http.cors().and().csrf().disable()
             .authorizeRequests()
             .antMatchers("/v2/api-docs", "/configuration/ui", "/swagger-resources/**", "/configuration/**", "/swagger-ui.html", "/webjars/**").permitAll()
             .antMatchers("/users", "/users/login", "/users/logout", "/users/sign-up-confirmation").permitAll()
