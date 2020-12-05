@@ -2,6 +2,7 @@ package pl.put.smartgarden.infra.api
 
 import pl.put.smartgarden.domain.user.UserDeviceService
 import pl.put.smartgarden.domain.user.UserService
+import pl.put.smartgarden.domain.user.dto.request.UserChangePasswordRequest
 import pl.put.smartgarden.domain.user.dto.response.UserGeneralSettingsResponse
 import spock.lang.Specification
 
@@ -26,10 +27,15 @@ class UserGeneralSettingsControllerTest extends Specification {
         userGeneralSettings.deviceGuid == "guid"
         userGeneralSettings.latitude == 23.3
         userGeneralSettings.longitude == 54.6
-
     }
 
-    def "ChangePassword"() {
+    def "Should be able to change password"() {
+//        given:
+//        def request = new UserChangePasswordRequest("oldPassword", "newPassword", "newPassword")
+//        userService.changeUserPassword(13, request) >>
+//
+//        when:
+//        userGeneralSettingsController.changePassword(13, request)
     }
 
     def "ChangeEmail"() {

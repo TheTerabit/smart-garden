@@ -32,7 +32,7 @@ class SecurityConfiguration : WebSecurityConfigurerAdapter() {
         http.cors().and().csrf().disable()
             .authorizeRequests()
             .antMatchers("/v2/api-docs", "/configuration/ui", "/swagger-resources/**", "/configuration/**", "/swagger-ui.html", "/webjars/**").permitAll()
-            .antMatchers("/users", "/users/login", "/users/logout", "/users/sign-up-confirmation", "/devices").permitAll()
+            .antMatchers("/users", "/users/login", "/users/sign-up-confirmation", "/devices").permitAll()
     }
 
     @Bean
@@ -50,7 +50,7 @@ class SecurityConfiguration : WebSecurityConfigurerAdapter() {
     fun userFilterRegistrationBean(filter: JwtFilter): FilterRegistrationBean<Filter> {
         val filterRegistrationBean = FilterRegistrationBean<Filter>()
         filterRegistrationBean.filter = filter
-        filterRegistrationBean.addUrlPatterns("/users/me", "/users/me/**", "/devices/**")
+        filterRegistrationBean.addUrlPatterns("/users/me", "/users/me/**", "/users/logout", "/devices/**")
         filterRegistrationBean.order = 2
         return filterRegistrationBean
     }

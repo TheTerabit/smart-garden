@@ -22,7 +22,9 @@ class UserDeviceService(
     val userRepository: UserRepository
 ) {
 
-    fun createAndSaveDevice(deviceGuid: String, latitude: Double, longitude: Double, userId: Int) : Device {
+    fun createAndSaveDevice(deviceGuid: String, latitude: Double, longitude: Double, userId: Int): Device {
+        if (deviceRepository.existsByGuid(deviceGuid))
+            throw SmartGardenException("Device is in use by another account.", HttpStatus.BAD_REQUEST)
         val device = Device(
             guid = deviceGuid,
             latitude = latitude,
@@ -33,7 +35,7 @@ class UserDeviceService(
         return deviceRepository.save(device)
     }
 
-    fun saveDevice(device: Device) : Device = deviceRepository.save(device)
+    fun saveDevice(device: Device): Device = deviceRepository.save(device)
 
     fun setDeviceLocation(userId: Int, locationRequest: LocationRequest): UserGeneralSettingsResponse {
         val user = getUserById(userId)
@@ -85,7 +87,7 @@ class UserDeviceService(
         TODO("Not yet implemented")
     }
 
-    fun getAvailableAreas() : List<AreaResponse> {
+    fun getAvailableAreas(): List<AreaResponse> {
         TODO()
     }
 
