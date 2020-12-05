@@ -7,8 +7,7 @@ import javax.validation.constraints.Pattern
 import javax.validation.constraints.Size
 
 data class UserSignUpRequest(
-    @field:Size(min = 3, max = 25, message = "{validation.user.username.min}")
-    @field:Pattern(regexp = "^[a-zA-Z0-9]+$", message = "{validation.user.username.letters}")
+    @field:NotBlank(message = "{validation.user.username.not-empty}")
     val username: String,
     @field:Email(message = "{validation.user.email.not-valid}")
     @field:NotBlank(message = "{validation.user.email.not-empty}")
