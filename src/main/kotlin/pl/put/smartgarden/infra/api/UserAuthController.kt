@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -22,6 +23,7 @@ import pl.put.smartgarden.domain.user.dto.request.UserSignUpRequest
 import javax.validation.Valid
 
 @Api(description = "Users authorization api")
+@CrossOrigin
 @RestController
 @RequestMapping("/users")
 class UserAuthController(

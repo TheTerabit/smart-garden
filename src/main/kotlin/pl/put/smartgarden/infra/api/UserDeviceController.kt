@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -25,6 +26,7 @@ import pl.put.smartgarden.domain.user.dto.response.AreaSettingsResponse
 import java.time.Instant
 
 @Api(description = "User device frontend API")
+@CrossOrigin
 @RestController
 @RequestMapping("/users/me/device")
 class UserDeviceController(
