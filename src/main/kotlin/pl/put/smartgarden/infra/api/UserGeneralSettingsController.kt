@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestAttribute
@@ -22,6 +23,7 @@ import pl.put.smartgarden.domain.user.dto.request.UserChangeUsernameRequest
 import pl.put.smartgarden.domain.user.dto.response.UserGeneralSettingsResponse
 
 @Api(description = "User general settings API")
+@CrossOrigin
 @RestController
 @RequestMapping("/users/me")
 class UserGeneralSettingsController(
