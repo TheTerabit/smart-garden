@@ -51,9 +51,8 @@ class UserGeneralSettingsController(
     ])
     @ResponseStatus(HttpStatus.OK)
     fun changePassword(@ApiParam(hidden = true) @RequestAttribute("id") userId: Int,
-                       @RequestBody user: UserChangePasswordRequest): UserGeneralSettingsResponse {
-        // TODO
-        return UserGeneralSettingsResponse("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123", 12.3, 12.3)
+                       @RequestBody userRequest: UserChangePasswordRequest): UserGeneralSettingsResponse {
+        return userService.changePassword(userId, userRequest)
     }
 
     @PutMapping("/change-email")
@@ -65,9 +64,8 @@ class UserGeneralSettingsController(
     ])
     @ResponseStatus(HttpStatus.OK)
     fun changeEmail(@ApiParam(hidden = true) @RequestAttribute("id") userId: Int,
-                    @RequestBody user: UserChangeEmailRequest): UserGeneralSettingsResponse {
-        // TODO
-        return UserGeneralSettingsResponse("nazwauzytkownika", "uzytkownik@gmail.com", "123dasads123", 11.2, 12.3)
+                    @RequestBody userRequest: UserChangeEmailRequest): UserGeneralSettingsResponse {
+        return userService.changeEmail(userId, userRequest)
     }
 
     @PutMapping("/change-username")

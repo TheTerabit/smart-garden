@@ -56,4 +56,11 @@ class UserAuthService(
         if (!revokedTokenRepository.existsById(token))
             revokedTokenRepository.save(RevokedToken(token))
     }
+
+    fun updateUserPassword(user: User, password: String) : User {
+        val encodedPassword = securityService.encodePassword(password)
+        user.password = encodedPassword
+
+        return user
+    }
 }

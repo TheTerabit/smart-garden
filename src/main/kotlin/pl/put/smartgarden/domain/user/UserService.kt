@@ -2,7 +2,10 @@ package pl.put.smartgarden.domain.user
 
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import pl.put.smartgarden.domain.SmartGardenException
+import pl.put.smartgarden.domain.user.dto.request.UserChangeEmailRequest
+import pl.put.smartgarden.domain.user.dto.request.UserChangePasswordRequest
 import pl.put.smartgarden.domain.user.dto.request.UserSignInRequest
 import pl.put.smartgarden.domain.user.dto.request.UserSignInResponse
 import pl.put.smartgarden.domain.user.dto.request.UserSignUpRequest
@@ -11,6 +14,7 @@ import pl.put.smartgarden.domain.user.exception.UserAlreadyExistsException
 import pl.put.smartgarden.domain.user.repository.UserRepository
 
 @Service
+@Transactional
 class UserService(
     private val authService: UserAuthService,
     private val deviceService: UserDeviceService,
@@ -76,5 +80,24 @@ class UserService(
         if (!userOptional.isPresent) throw SmartGardenException("Invalid token", HttpStatus.UNAUTHORIZED)
 
         return userOptional.get()
+    }
+
+    fun changePassword(userId: Int, request: UserChangePasswordRequest): UserGeneralSettingsResponse {
+        val user = getUserById(userId)
+        if (authService.isUserPasswordCorrect(request.oldPassword, user.password)) {
+            if (request.password == request.passwordRepeated) {
+                val userWithUpdatedPassword = authService.updateUserPassword(user, request.password)
+                val savedUser = userRepository.saveAndFlush(userWithUpdatedPassword)
+                return UserGeneralSettingsResponse(savedUser.username, savedUser.email, savedUser.device?.guid, savedUser.device?.latitude, savedUser.device?.longitude)
+            } else {
+                throw SmartGardenException("Passwords don't match.", HttpStatus.BAD_REQUEST)
+            }
+        } else {
+            throw SmartGardenException("Wrong password.", HttpStatus.BAD_REQUEST)
+        }
+    }
+
+    fun changeEmail(userId: Int, userRequest: UserChangeEmailRequest): UserGeneralSettingsResponse {
+        TODO("Not yet implemented")
     }
 }
