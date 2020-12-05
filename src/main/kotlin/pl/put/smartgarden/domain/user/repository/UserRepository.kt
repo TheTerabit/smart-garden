@@ -8,4 +8,5 @@ import pl.put.smartgarden.domain.user.User
 interface UserRepository : JpaRepository<User, Int> {
     fun findByEmail(email: String): User?
     fun findByUsername(username: String): User?
+    fun getUserById(id: Int): User
 }
