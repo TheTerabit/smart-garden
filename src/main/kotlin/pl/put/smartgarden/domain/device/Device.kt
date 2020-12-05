@@ -59,7 +59,7 @@ class Sensor(
 @Table(name = "measures")
 class Measure(
     var timestamp: Instant,
-    var value: Double,
+    var value: Int,
     @Column(name = "sensor_id")
     var sensorId: Int
 ) {

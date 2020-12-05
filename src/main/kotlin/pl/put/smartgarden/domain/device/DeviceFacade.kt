@@ -29,7 +29,6 @@ class DeviceFacade(
     }
 
     fun createMeasures(deviceMeasures: List<MeasureRequest>, token: String): List<MeasureResponse> {
-        //checkToken
         return measureService.createMeasures(deviceMeasures)
             .map { measure ->
                 MeasureResponse(
@@ -43,7 +42,11 @@ class DeviceFacade(
     }
 
     fun getIrrigationDecisions(token: String): List<AreaDecisionResponse> {
-        //checkToken
+        //getSensors
+        //getSettings
+        //getWeather
+        //calculate
+
         return sensorService.getIrrigationSensorsByDeviceId(securityService.getIdFromToken(token)).map {sensor -> AreaDecisionResponse(sensor.guid, true)}
     }
 }
