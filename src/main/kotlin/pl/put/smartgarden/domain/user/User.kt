@@ -30,7 +30,7 @@ class User(
 }
 
 @Entity
-@Table(name = "VerificationTokens")
+@Table(name = "verification_tokens")
 class VerificationToken(
     var token: String,
     @OneToOne(targetEntity = User::class, fetch = FetchType.EAGER)
@@ -45,7 +45,7 @@ class VerificationToken(
 }
 
 @Entity
-@Table(name = "RevokedTokens")
+@Table(name = "revoked_tokens")
 class RevokedToken(
         @Id
         var token: String
