@@ -1,12 +1,12 @@
 package pl.put.smartgarden.domain.user
 
-import io.jsonwebtoken.Jwts
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import pl.put.smartgarden.domain.SecurityService
+import pl.put.smartgarden.domain.ServiceRole
 import pl.put.smartgarden.domain.SmartGardenException
 import pl.put.smartgarden.domain.user.dto.request.UserSignUpRequest
 import pl.put.smartgarden.domain.user.repository.RevokedTokenRepository
@@ -16,7 +16,6 @@ import pl.put.smartgarden.domain.user.repository.VerificationTokenRepository
 @Service
 class UserAuthService(
     val mailService: MailService,
-    val userRepository: UserRepository,
     val verificationTokenRepository: VerificationTokenRepository,
     val revokedTokenRepository: RevokedTokenRepository,
     val securityService: SecurityService,
@@ -50,28 +49,8 @@ class UserAuthService(
         return verificationToken.user
     }
 
-    /**
-     * Checks if token is valid and returns logged in user or throws appropriate exception.
-     */
-    fun getUserFromJWToken(token: String): User {
-        val tokenValue = if (token.startsWith("Bearer ")) token.substring(7) else token
-
-        if (revokedTokenRepository.existsById(tokenValue))
-            throw SmartGardenException("Bad token", HttpStatus.UNAUTHORIZED)
-
-        val claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(tokenValue).body
-        val userId = claims["sub"].toString().toIntOrNull()
-        userId ?: throw SmartGardenException("Bad token", HttpStatus.UNAUTHORIZED)
-
-        val user = userRepository.findById(userId)
-
-        if (!user.isPresent) throw SmartGardenException("Bad token", HttpStatus.UNAUTHORIZED)
-
-        return user.get()
-    }
-
     fun generateJsonWebTokenFromUser(user: User): String =
-        securityService.generateJsonWebTokenFromId(user.id)
+        securityService.generateJWTWithIdAndRole(user.id, ServiceRole.USER)
 
     fun revokeToken(token: String) {
         if (!revokedTokenRepository.existsById(token))

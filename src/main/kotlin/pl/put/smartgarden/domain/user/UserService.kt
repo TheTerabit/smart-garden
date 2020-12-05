@@ -54,8 +54,9 @@ class UserService(
         userRepository.save(user)
     }
 
-    fun getUserGeneralSettings(token: String): UserGeneralSettingsResponse {
-        val user = authService.getUserFromJWToken(token)
+    fun getUserGeneralSettings(userId: Int): UserGeneralSettingsResponse {
+        val user = getUserById(userId)
+
         return UserGeneralSettingsResponse(
             username = user.username,
             email = user.email,
@@ -67,5 +68,13 @@ class UserService(
 
     fun signOut(token: String) {
         authService.revokeToken(token);
+    }
+
+    fun getUserById(id: Int): User {
+        val userOptional = userRepository.findById(id)
+
+        if (!userOptional.isPresent) throw SmartGardenException("Invalid token", HttpStatus.UNAUTHORIZED)
+
+        return userOptional.get()
     }
 }
