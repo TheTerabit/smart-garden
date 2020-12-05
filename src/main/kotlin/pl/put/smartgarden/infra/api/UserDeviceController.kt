@@ -2,6 +2,7 @@ package pl.put.smartgarden.infra.api
 
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import org.springframework.http.HttpStatus
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestAttribute
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
@@ -41,12 +43,12 @@ class UserDeviceController(
     ])
     @ResponseStatus(HttpStatus.OK)
     fun getAreaMeasures(
-        @RequestHeader("Authorization") token: String,
+        @ApiParam(hidden = true) @RequestAttribute("id") userId: Int,
         @PathVariable("areaId") areaId: String,
         @RequestParam("from", required = false) from: Instant,
         @RequestParam("to", required = false) to: Instant
     ): List<MeasureResponse> =
-        userDeviceService.getAreaMeasures(token, areaId, from, to)
+        userDeviceService.getAreaMeasures(userId, areaId, from, to)
 
     @PutMapping("/areas/{areaId}/irrigation-level")
     @ApiOperation("Set irrigation level for selected area.")
@@ -57,11 +59,11 @@ class UserDeviceController(
     ])
     @ResponseStatus(HttpStatus.OK)
     fun setIrrigationLevel(
-        @RequestHeader("Authorization") token: String,
+        @ApiParam(hidden = true) @RequestAttribute("id") userId: Int,
         @RequestBody irrigationLevelRequest: IrrigationLevelRequest,
         @PathVariable("areaId") areaId: String
     ): AreaSettingsResponse =
-        userDeviceService.setIrrigationLevel(token, areaId, irrigationLevelRequest)
+        userDeviceService.setIrrigationLevel(userId, areaId, irrigationLevelRequest)
 
     @GetMapping("/areas/settings")
     @ApiOperation("Get settings for all areas.")
@@ -71,8 +73,8 @@ class UserDeviceController(
         ApiResponse(code = 403, message = "Unactivated")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun getIrrigationSettings(@RequestHeader("Authorization") token: String): List<AreaSettingsResponse> =
-        userDeviceService.getAreasSetting(token)
+    fun getIrrigationSettings(@ApiParam(hidden = true) @RequestAttribute("id") userId: Int): List<AreaSettingsResponse> =
+        userDeviceService.getAreasSetting(userId)
 
     @PutMapping("/areas/{areaId}/next-irrigation")
     @ApiOperation("Set next irrigation time for selected area.")
@@ -83,11 +85,11 @@ class UserDeviceController(
     ])
     @ResponseStatus(HttpStatus.OK)
     fun setNextIrrigationTime(
-        @RequestHeader("Authorization") token: String,
+        @ApiParam(hidden = true) @RequestAttribute("id") userId: Int,
         @RequestBody irrigationTimeRequest: NextIrrigationRequest,
         @PathVariable("areaId") areaId: String
     ): NextIrrigationRequest =
-        userDeviceService.setNextIrrigationTime(token, areaId, irrigationTimeRequest)
+        userDeviceService.setNextIrrigationTime(userId, areaId, irrigationTimeRequest)
 
     @PostMapping("/areas/{areaId}/irrigate-now")
     @ApiOperation("Irrigate selected area.")
@@ -98,10 +100,10 @@ class UserDeviceController(
     ])
     @ResponseStatus(HttpStatus.OK)
     fun irrigateArea(
-        @RequestHeader("Authorization") token: String,
+        @ApiParam(hidden = true) @RequestAttribute("id") userId: Int,
         @PathVariable("areaId") areaId: String
     ): Unit =
-        userDeviceService.irrigateArea(token, areaId)
+        userDeviceService.irrigateArea(userId, areaId)
 
     @PutMapping("/areas/{areaId}/link-sensor/{sensorId}")
     @ApiOperation("Add selected sensor to selected area.")
@@ -112,11 +114,11 @@ class UserDeviceController(
     ])
     @ResponseStatus(HttpStatus.OK)
     fun linkSensorToArea(
-        @RequestHeader("Authorization") token: String,
+        @ApiParam(hidden = true) @RequestAttribute("id") userId: Int,
         @PathVariable("areaId") areaId: String,
         @PathVariable("sensorId") sensorId: String
     ): List<AreaResponse> =
-        userDeviceService.linkSensorToArea(token, areaId, sensorId)
+        userDeviceService.linkSensorToArea(userId, areaId, sensorId)
 
     @PutMapping("/areas/unlink-sensor/{sensorId}")
     @ApiOperation("Remove selected sensor from its area.")
@@ -127,10 +129,10 @@ class UserDeviceController(
     ])
     @ResponseStatus(HttpStatus.OK)
     fun unlinkSensorFromArea(
-        @RequestHeader("Authorization") token: String,
+        @ApiParam(hidden = true) @RequestAttribute("id") userId: Int,
         @PathVariable("sensorId") sensorId: String
     ): List<AreaResponse> =
-        userDeviceService.unlinkSensorFromArea(token, sensorId)
+        userDeviceService.unlinkSensorFromArea(userId, sensorId)
 
     @GetMapping("/sensors")
     @ApiOperation("Get all sensors.")
@@ -140,8 +142,8 @@ class UserDeviceController(
         ApiResponse(code = 403, message = "Unactivated")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun getNotLinkedSensors(@RequestHeader("Authorization") token: String): List<SensorResponse> =
-        userDeviceService.getNotLinkedSensors(token)
+    fun getNotLinkedSensors(@ApiParam(hidden = true) @RequestAttribute("id") userId: Int): List<SensorResponse> =
+        userDeviceService.getNotLinkedSensors(userId)
 
     @GetMapping("/areas")
     @ApiOperation("Get all areas.")
@@ -151,9 +153,9 @@ class UserDeviceController(
         ApiResponse(code = 403, message = "Unactivated")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun getAvailableAreas(@RequestHeader("Authorization") token : String) : List<AreaResponse>
+    fun getAvailableAreas(@ApiParam(hidden = true) @RequestAttribute("id") userId: Int) : List<AreaResponse>
     {
-        return userDeviceService.getAvailableAreas()
+        return userDeviceService.getAvailableAreas(userId)
     }
 
 }
