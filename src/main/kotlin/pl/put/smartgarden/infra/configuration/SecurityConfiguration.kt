@@ -32,7 +32,7 @@ class SecurityConfiguration : WebSecurityConfigurerAdapter() {
         http.cors().and().csrf().disable()
             .authorizeRequests()
             .antMatchers("/v2/api-docs", "/configuration/ui", "/swagger-resources/**", "/configuration/**", "/swagger-ui.html", "/webjars/**").permitAll()
-            .antMatchers("/users", "/users/login", "/users/logout", "/users/sign-up-confirmation").permitAll()
+            .antMatchers("/users", "/users/login", "/users/logout", "/users/sign-up-confirmation", "/devices").permitAll()
     }
 
     @Bean

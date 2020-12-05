@@ -1,0 +1,49 @@
+package pl.put.smartgarden.infra.api
+
+import pl.put.smartgarden.domain.user.UserDeviceService
+import pl.put.smartgarden.domain.user.UserService
+import pl.put.smartgarden.domain.user.dto.response.UserGeneralSettingsResponse
+import spock.lang.Specification
+
+class UserGeneralSettingsControllerTest extends Specification {
+    def userService = Mock(UserService)
+    def userDeviceService = Mock(UserDeviceService)
+
+    def userGeneralSettingsController = new UserGeneralSettingsController(userService, userDeviceService)
+
+    def "Should return currently logged in user"() {
+        given:
+        def userGeneralSettings = new UserGeneralSettingsResponse("username", "email@mail.com", "guid", 23.3, 54.6)
+        userService.getUserGeneralSettings(15) >> userGeneralSettings
+
+        when:
+        def user = userGeneralSettingsController.getCurrentUser(15)
+
+        then:
+        userGeneralSettings == user
+        userGeneralSettings.username == "username"
+        userGeneralSettings.email == "email@mail.com"
+        userGeneralSettings.deviceGuid == "guid"
+        userGeneralSettings.latitude == 23.3
+        userGeneralSettings.longitude == 54.6
+
+    }
+
+    def "ChangePassword"() {
+    }
+
+    def "ChangeEmail"() {
+    }
+
+    def "ChangeUsername"() {
+    }
+
+    def "ChangeLocation"() {
+    }
+
+    def "GetUserService"() {
+    }
+
+    def "GetUserDeviceService"() {
+    }
+}
