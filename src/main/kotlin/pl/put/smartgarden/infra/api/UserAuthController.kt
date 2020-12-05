@@ -64,5 +64,5 @@ class UserAuthController(
         ApiResponse(code = 400, message = "Bad request")
     ])
     @ResponseStatus(HttpStatus.OK)
-    fun signOut(@RequestAttribute("token") token: String) = userService.signOut(token)
+    fun signOut(@ApiParam(hidden = true) @RequestAttribute("token") token: String) = userService.signOut(token)
 }
