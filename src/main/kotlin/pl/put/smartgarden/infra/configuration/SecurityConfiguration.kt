@@ -20,6 +20,7 @@ import javax.servlet.FilterChain
 import javax.servlet.ServletRequest
 import javax.servlet.ServletResponse
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 
 @Configuration
@@ -38,20 +39,32 @@ class SecurityConfiguration : WebSecurityConfigurerAdapter() {
     fun passwordEncoder(): BCryptPasswordEncoder = BCryptPasswordEncoder()
 
     @Bean
-    fun userFilterRegistrationBean(filter: JwtFilter): FilterRegistrationBean<Filter> {
+    fun filterRegistrationBeanCors(filter: SimpleCorsFilter): FilterRegistrationBean<Filter> {
         val filterRegistrationBean = FilterRegistrationBean<Filter>()
         filterRegistrationBean.filter = filter
-        filterRegistrationBean.addUrlPatterns("/users/me", "/users/me/**", "/devices/**")
         filterRegistrationBean.order = 1
         return filterRegistrationBean
     }
 
     @Bean
+    fun userFilterRegistrationBean(filter: JwtFilter): FilterRegistrationBean<Filter> {
+        val filterRegistrationBean = FilterRegistrationBean<Filter>()
+        filterRegistrationBean.filter = filter
+        filterRegistrationBean.addUrlPatterns("/users/me", "/users/me/**", "/devices/**")
+        filterRegistrationBean.order = 2
+        return filterRegistrationBean
+    }
+
+    @Bean
     fun filter(): JwtFilter = JwtFilter()
+
+    @Bean
+    fun simpleCorsFilter(): SimpleCorsFilter = SimpleCorsFilter()
 }
 
-class JwtFilter() : Filter {
-    @Autowired lateinit var securityService: SecurityService
+class JwtFilter : Filter {
+    @Autowired
+    lateinit var securityService: SecurityService
 
     @Value("\${jwt-secret-key}")
     lateinit var secretKey: String
@@ -79,5 +92,21 @@ class JwtFilter() : Filter {
         }
 
         filterChain.doFilter(servletRequest, servletResponse)
+    }
+}
+
+class SimpleCorsFilter : Filter {
+    override fun doFilter(req: ServletRequest, res: ServletResponse, chain: FilterChain) {
+        val response = res as HttpServletResponse
+        val request = req as HttpServletRequest
+        response.setHeader("Access-Control-Allow-Origin", "*")
+        response.setHeader("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS ")
+        response.setHeader("Access-Control-Max-Age", "3600")
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        if ("OPTIONS".equals(request.method, ignoreCase = true)) {
+            response.status = HttpServletResponse.SC_OK
+        } else {
+            chain.doFilter(req, res)
+        }
     }
 }
