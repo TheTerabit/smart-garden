@@ -1,4 +1,4 @@
-package pl.put.smartgarden.infra.api
+package pl.put.smartgarden.infra
 
 import org.springframework.boot.web.servlet.error.ErrorController
 import org.springframework.http.HttpHeaders

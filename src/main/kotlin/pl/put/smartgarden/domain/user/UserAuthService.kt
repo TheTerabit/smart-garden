@@ -6,16 +6,15 @@ import kotlinx.coroutines.async
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import pl.put.smartgarden.domain.SecurityService
 import pl.put.smartgarden.domain.SmartGardenException
 import pl.put.smartgarden.domain.user.dto.request.UserSignUpRequest
 import pl.put.smartgarden.domain.user.repository.RevokedTokenRepository
 import pl.put.smartgarden.domain.user.repository.UserRepository
 import pl.put.smartgarden.domain.user.repository.VerificationTokenRepository
-import pl.put.smartgarden.domain.SecurityService
-import pl.put.smartgarden.domain.device.Device
 
 @Service
-class AuthService(
+class UserAuthService(
     val mailService: MailService,
     val userRepository: UserRepository,
     val verificationTokenRepository: VerificationTokenRepository,
@@ -25,13 +24,12 @@ class AuthService(
     @Value("\${is-user-enabled-by-default}") val isUserEnabledByDefault: Boolean
 ) {
 
-    //to wywalic trzebA
     fun createUser(userDto: UserSignUpRequest): User = User(
-            username = userDto.username,
-            enabled = isUserEnabledByDefault,
-            email = userDto.email,
-            password = securityService.encodePassword(userDto.password)
-        )
+        username = userDto.username,
+        enabled = isUserEnabledByDefault,
+        email = userDto.email,
+        password = securityService.encodePassword(userDto.password)
+    )
 
     fun sendVerificationEmail(userDto: UserSignUpRequest, user: User) {
         if (!isUserEnabledByDefault)
@@ -42,10 +40,8 @@ class AuthService(
             }
     }
 
-    fun validateUserSignIn(user: User): User {
-        if (!user.enabled) throw SmartGardenException("Account is not enabled.", HttpStatus.UNAUTHORIZED)
-        if (!securityService.isPasswordMatching(user.password, user.password)) throw SmartGardenException("Bad login or password.", HttpStatus.UNAUTHORIZED)
-        return user
+    fun isUserPasswordCorrect(password: String, passwordEncoded: String): Boolean {
+        return securityService.isPasswordMatching(password, passwordEncoded)
     }
 
     fun getUserFromVerificationToken(token: String): User {
@@ -54,6 +50,9 @@ class AuthService(
         return verificationToken.user
     }
 
+    /**
+     * Checks if token is valid and returns logged in user or throws appropriate exception.
+     */
     fun getUserFromJWToken(token: String): User {
         val tokenValue = if (token.startsWith("Bearer ")) token.substring(7) else token
 
@@ -61,7 +60,10 @@ class AuthService(
             throw SmartGardenException("Bad token", HttpStatus.UNAUTHORIZED)
 
         val claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(tokenValue).body
-        val user = userRepository.findById(claims["sub"].toString())
+        val userId = claims["sub"].toString().toIntOrNull()
+        userId ?: throw SmartGardenException("Bad token", HttpStatus.UNAUTHORIZED)
+
+        val user = userRepository.findById(userId)
 
         if (!user.isPresent) throw SmartGardenException("Bad token", HttpStatus.UNAUTHORIZED)
 

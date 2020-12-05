@@ -5,7 +5,7 @@ import org.springframework.stereotype.Repository
 import pl.put.smartgarden.domain.user.User
 
 @Repository
-interface UserRepository : JpaRepository<User, String> {
+interface UserRepository : JpaRepository<User, Int> {
     fun findByEmail(email: String): User?
     fun findByUsername(username: String): User?
 }

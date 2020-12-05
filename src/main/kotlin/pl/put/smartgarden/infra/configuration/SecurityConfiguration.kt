@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletRequest
 @Configuration
 @EnableWebSecurity
 @EnableEncryptableProperties
-class SecurityConfigurationn : WebSecurityConfigurerAdapter() {
+class SecurityConfiguration : WebSecurityConfigurerAdapter() {
 
     override fun configure(http: HttpSecurity) {
         http.csrf().disable()
@@ -33,7 +33,7 @@ class SecurityConfigurationn : WebSecurityConfigurerAdapter() {
     }
 
     @Bean
-    fun passwordEncoder(): BCryptPasswordEncoder? = BCryptPasswordEncoder()
+    fun passwordEncoder(): BCryptPasswordEncoder = BCryptPasswordEncoder()
 
     @Bean
     fun filterRegistrationBean(filter: JwtFilter): FilterRegistrationBean<Filter> {
@@ -54,7 +54,7 @@ class JwtFilter : Filter {
 
     override fun doFilter(servletRequest: ServletRequest, servletResponse: ServletResponse, filterChain: FilterChain) {
         val httpServletRequest = servletRequest as HttpServletRequest
-        val header = httpServletRequest.getHeader("authorization")
+        val header = httpServletRequest.getHeader("Authorization")
         if (header == null || !header.startsWith("Bearer ")) {
             throw SmartGardenException("Missing or invalid Authorization header", HttpStatus.UNAUTHORIZED)
         } else {
