@@ -151,7 +151,7 @@ class UserDeviceController(
     @ResponseStatus(HttpStatus.OK)
     fun getAvailableAreas(@RequestHeader("Authorization") token : String) : List<AreaResponse>
     {
-        return userDeviceService.getAvailableAreas();
+        return userDeviceService.getAvailableAreas()
     }
 
 }

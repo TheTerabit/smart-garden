@@ -1,5 +1,6 @@
 package pl.put.smartgarden.domain.device
 
+import pl.put.smartgarden.domain.ServiceRole
 import pl.put.smartgarden.domain.device.dto.request.DeviceRequest
 import pl.put.smartgarden.domain.device.dto.request.SensorRequest
 import pl.put.smartgarden.domain.device.dto.response.DeviceResponse
@@ -28,7 +29,7 @@ class DeviceFacadeTest extends Specification {
         device.id = 23
         deviceService.getDeviceByGuid(deviceRequest.guid) >> device
         sensorService.createSensors(23, deviceRequest.sensors) >> [sensor]
-        securityService.generateJsonWebTokenFromId(23) >> "ef1231313ewfewun21uneu12nu214un421un3u13n2un31u3nu131=="
+        securityService.generateJWTWithIdAndRole(23, ServiceRole.DEVICE) >> "ef1231313ewfewun21uneu12nu214un421un3u13n2un31u3nu131=="
 
         when:
         def result = deviceFacade.createOrUpdateDevice(deviceRequest)

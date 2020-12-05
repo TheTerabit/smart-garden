@@ -8,6 +8,7 @@ import pl.put.smartgarden.domain.device.dto.response.DeviceResponse
 import pl.put.smartgarden.domain.device.dto.response.MeasureResponse
 import pl.put.smartgarden.domain.device.exception.NoSuchDeviceException
 import pl.put.smartgarden.domain.SecurityService
+import pl.put.smartgarden.domain.ServiceRole
 import pl.put.smartgarden.domain.device.dto.response.SensorResponse
 
 @Service
@@ -23,7 +24,7 @@ class DeviceFacade(
         val sensors = sensorService.createSensors(device.id, deviceRequest.sensors)
             .filter { it.isActive }
             .map { SensorResponse(it.id, it.guid) }
-        val token = securityService.generateJsonWebTokenFromId(device.id)
+        val token = securityService.generateJWTWithIdAndRole(device.id, ServiceRole.DEVICE)
         return DeviceResponse(token, sensors)
     }
 
