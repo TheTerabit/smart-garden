@@ -22,7 +22,7 @@ class SensorServiceTest extends Specification {
         def sensor1 = new Sensor(TEMPERATURE, "w4e6r6t6cr5xe4w3z54e65r6t7yt7r56e", 23)
         sensor1.id = 1
         sensor1.areaId = 3
-        def measured = [new Measure(Instant.now(), 22.5, 1)]
+        def measured = [new Measure(Instant.now(), 225, 1)]
         sensor1.measures = measured
         def sensor2 = new Sensor(IRRIGATION, "edhh2387gfd782gf7834gf863g467fg67w", 23)
         sensorRepository.findAllByDeviceId(23) >> [sensor1, sensor2]
@@ -75,7 +75,7 @@ class SensorServiceTest extends Specification {
         def sensor1 = new Sensor(TEMPERATURE, "w4e6r6t6cr5xe4w3z54e65r6t7yt7r56e", 23)
         sensor1.id = 1
         sensor1.areaId = 3
-        def measured = [new Measure(Instant.now(), 22.5, 1)]
+        def measured = [new Measure(Instant.now(), 225, 1)]
         sensor1.measures = measured
         def sensor2 = new Sensor(IRRIGATION, "edhh2387gfd782gf7834gf863g467fg67w", 23)
         sensorRepository.findAllByDeviceId(23) >> [sensor1, sensor2]
@@ -120,7 +120,7 @@ class SensorServiceTest extends Specification {
         def sensor1 = new Sensor(TEMPERATURE, "w4e6r6t6cr5xe4w3z54e65r6t7yt7r56e", 22)
         sensor1.id = 1
         sensor1.areaId = 3
-        def measured = [new Measure(Instant.now(), 22.5, 1)]
+        def measured = [new Measure(Instant.now(), 225, 1)]
         sensor1.measures = measured
         def sensor2 = new Sensor(IRRIGATION, "edhh2387gfd782gf7834gf863g467fg67w", 23)
         sensorRepository.findAllByDeviceId(23) >> [sensor2]
