@@ -141,7 +141,7 @@ class DeviceFacade(
             return true
         }
         if (area.settings.isWeatherEnabled) {
-            return weatherService.isGoingToRain(area.deviceId)
+            return weatherService.isGoingToRain(deviceService.getDeviceById(area.deviceId).get())
         } else {
             return false
         }

@@ -37,6 +37,21 @@ class Device(
 }
 
 @Entity
+@Table(name = "weathers")
+class Weather(
+    @Column(name = "device_id")
+    var deviceId: Int,
+    var byWhen: Instant,
+    var isGoingToRain: Boolean
+) {
+    @Id
+    @Column(name = "id")
+    @GeneratedValue(generator="increment")
+    @GenericGenerator(name="increment", strategy = "increment")
+    var id: Int = 0
+}
+
+@Entity
 @Table(name = "sensors")
 class Sensor(
     var type: SensorType,
