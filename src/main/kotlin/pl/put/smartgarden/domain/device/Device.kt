@@ -6,10 +6,12 @@ import java.util.Collections
 import javax.persistence.CascadeType
 import javax.persistence.Column
 import javax.persistence.Entity
+import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
 import javax.persistence.JoinColumn
 import javax.persistence.OneToMany
+import javax.persistence.OneToOne
 import javax.persistence.Table
 
 @Entity
@@ -32,6 +34,21 @@ class Device(
     @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
     @JoinColumn(name = "device_id", referencedColumnName = "id")
     var areas: MutableList<Area> = Collections.emptyList()
+}
+
+@Entity
+@Table(name = "weathers")
+class Weather(
+    @Column(name = "device_id")
+    var deviceId: Int,
+    var byWhen: Instant,
+    var isGoingToRain: Boolean
+) {
+    @Id
+    @Column(name = "id")
+    @GeneratedValue(generator="increment")
+    @GenericGenerator(name="increment", strategy = "increment")
+    var id: Int = 0
 }
 
 @Entity
@@ -73,7 +90,9 @@ class Measure(
 @Entity
 @Table(name = "areas")
 class Area(
-    var settings: String,//TODO("Not yet implemented")
+    @OneToOne(targetEntity = AreaSettings::class, fetch = FetchType.EAGER)
+    @JoinColumn(name = "area_id")
+    var settings: AreaSettings,
     @Column(name = "device_id")
     var deviceId: Int,
     @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
@@ -96,7 +115,27 @@ class Irrigation(
     var timestamp: Instant,
     @Column(name = "area_id")
     var areaId: Int,
-    var planned: Boolean
+    var amount: Int
+) {
+    @Id
+    @Column(name = "id")
+    @GeneratedValue(generator="increment")
+    @GenericGenerator(name="increment", strategy = "increment")
+    var id: Int = 0
+}
+
+@Entity
+@Table(name = "area_settings")
+class AreaSettings(
+    @Column(name = "area_id")
+    var areaId: Int,
+    var frequencyValue: Int = 0,
+    var frequencyUnit: TimeUnit = TimeUnit.DAY,
+    var strength: Int = 0,
+    var threshhold: Int = 0,
+    var isWeatherEnabled: Boolean = false,
+    var isIrrigationEnabled: Boolean = false,
+    var irrigateNow: Boolean = false
 ) {
     @Id
     @Column(name = "id")

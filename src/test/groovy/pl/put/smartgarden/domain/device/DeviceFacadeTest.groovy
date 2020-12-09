@@ -15,7 +15,10 @@ class DeviceFacadeTest extends Specification {
     def sensorService = Mock(SensorService)
     def securityService = Mock(SecurityService)
     def measureService = Mock(MeasuseService)
-    def deviceFacade = new DeviceFacade(deviceService, sensorService, securityService, measureService)
+    def areaService = Mock(AreaService)
+    def irrigationService = Mock(IrrigationService)
+    def weatherService = Mock(WeatherService)
+    def deviceFacade = new DeviceFacade(deviceService, sensorService, securityService, measureService, areaService, irrigationService, weatherService)
 
     def "should successfully update device details"() {
         given:
