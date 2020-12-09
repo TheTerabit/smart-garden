@@ -162,32 +162,18 @@ class UserServiceTest extends Specification {
 
     def "Should retrieve user general settings"() {
         given:
-        def token = "jwt-token"
         def user = new User("username", "email@spam.com", "encryptedPassword", true, null)
         user.id = 123
         def device = new Device("deviceGuid", 123, 12.1, 55.3)
         user.device = device
 
-        authService.getUserFromJWToken(token) >> user
+        userRepository.findById(123) >> Optional.of(user)
 
         when:
-        def result = userService.getUserGeneralSettings(token)
+        def result = userService.getUserGeneralSettings(123)
 
         then:
         result == new UserGeneralSettingsResponse("username", "email@spam.com", "deviceGuid", 12.1, 55.3)
-    }
-
-    def "Should not retrieve user general settings when bad token"() {
-        given:
-        def token = "bad-token"
-
-        authService.getUserFromJWToken(token) >> { User -> throw new SmartGardenException() }
-
-        when:
-        userService.getUserGeneralSettings(token)
-
-        then:
-        thrown SmartGardenException
     }
 
     def "Should sign user out"() {
