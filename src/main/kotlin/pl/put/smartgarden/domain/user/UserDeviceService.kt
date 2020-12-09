@@ -4,17 +4,19 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import pl.put.smartgarden.domain.SmartGardenException
 import pl.put.smartgarden.domain.device.Device
-import pl.put.smartgarden.domain.device.Measure
 import pl.put.smartgarden.domain.device.SensorType
-import pl.put.smartgarden.domain.device.dto.response.MeasureResponse
-import pl.put.smartgarden.domain.device.dto.response.SensorResponse
 import pl.put.smartgarden.domain.device.repository.DeviceRepository
 import pl.put.smartgarden.domain.user.dto.request.IrrigationLevelRequest
 import pl.put.smartgarden.domain.user.dto.request.LocationRequest
 import pl.put.smartgarden.domain.user.dto.request.NextIrrigationRequest
 import pl.put.smartgarden.domain.user.dto.response.AreaResponse
-import pl.put.smartgarden.domain.user.dto.response.AreaSensorResponse
+import pl.put.smartgarden.domain.user.dto.response.AreaSensorMeasuresResponse
 import pl.put.smartgarden.domain.user.dto.response.AreaSettingsResponse
+import pl.put.smartgarden.domain.user.dto.response.MeasureMeasuresResponse
+import pl.put.smartgarden.domain.user.dto.response.MeasureResponse
+import pl.put.smartgarden.domain.user.dto.response.SensorResponse
+import pl.put.smartgarden.domain.user.dto.response.SimpleAreaResponse
+import pl.put.smartgarden.domain.user.dto.response.SimpleAreaSensorResponse
 import pl.put.smartgarden.domain.user.dto.response.UserGeneralSettingsResponse
 import pl.put.smartgarden.domain.user.repository.UserRepository
 import java.time.Instant
@@ -58,8 +60,21 @@ class UserDeviceService(
         )
     }
 
-    fun getAreaMeasures(userId: Int, areaId: String, from: Instant, to: Instant): List<MeasureResponse> {
-        TODO("Not yet implemented")
+    fun getAreaMeasures(userId: Int, areaId: Int, from: Instant?, to: Instant?): List<MeasureResponse> {
+        if (from != null && to != null && from.isAfter(to)) throw SmartGardenException("From cannot be after to!", HttpStatus.BAD_REQUEST)
+
+        val device = getUserById(userId).device!!
+
+        val areaFound = device.areas.firstOrNull { a -> a.id == areaId }
+            ?: throw SmartGardenException("Can't find area with given id: $areaId", HttpStatus.BAD_REQUEST)
+
+        return areaFound.sensors
+            .filter { s -> s.isActive }
+            .map { s ->
+                MeasureResponse(s.guid, s.type.name, s.type.unit, s.measures
+                    .filter { m -> (from == null || m.timestamp.isAfter(from)) && (to == null || m.timestamp.isBefore(to)) }
+                    .map { m -> MeasureMeasuresResponse(m.timestamp, m.value) })
+            }
     }
 
     fun setIrrigationLevel(userId: Int, areaId: String, irrigationLevelRequest: IrrigationLevelRequest): AreaSettingsResponse {
@@ -86,33 +101,37 @@ class UserDeviceService(
         TODO("Not yet implemented")
     }
 
-    fun getNotLinkedSensors(userId: Int): List<SensorResponse> {
-        TODO("Not yet implemented")
+    fun getAllSensors(userId: Int, active: Boolean?): List<SensorResponse> {
+        val device = getUserById(userId).device!!
+
+        return device.sensors
+            .filter { s -> active == null || s.isActive == active }
+            .map { s -> SensorResponse(s.guid, s.type.name, s.type.unit, s.areaId, s.isActive) }
     }
 
-    fun getAvailableAreas(userId: Int): List<AreaResponse> {
+    fun getAllAreasMeasures(userId: Int): List<AreaResponse> {
         val user = getUserById(userId)
         val areas = user.device?.areas!!
         val result = mutableListOf<AreaResponse>()
 
         for (area in areas) {
-            val humidityMeasures = area.sensors.filter { sensor -> sensor.type == SensorType.HUMIDITY }.flatMap { sensor -> sensor.measures }
+            val humidityMeasures = area.sensors.filter { sensor -> sensor.isActive && sensor.type == SensorType.HUMIDITY }.flatMap { sensor -> sensor.measures }
             val avgHumidity = area.sensors
-                .filter { sensor -> sensor.type == SensorType.HUMIDITY }
+                .filter { sensor -> sensor.isActive && sensor.type == SensorType.HUMIDITY }
                 .map { sensor -> sensor.measures[sensor.measures.lastIndex].value }
                 .average()
                 .toInt()
 
-            val illuminanceMeasures = area.sensors.filter { sensor -> sensor.type == SensorType.ILLUMINANCE }.flatMap { sensor -> sensor.measures }
+            val illuminanceMeasures = area.sensors.filter { sensor -> sensor.isActive && sensor.type == SensorType.ILLUMINANCE }.flatMap { sensor -> sensor.measures }
             val avgIlluminance = area.sensors
-                .filter { sensor -> sensor.type == SensorType.ILLUMINANCE }
+                .filter { sensor -> sensor.isActive && sensor.type == SensorType.ILLUMINANCE }
                 .map { sensor -> sensor.measures[sensor.measures.lastIndex].value }
                 .average()
                 .toInt()
 
-            val temperatureMeasures = area.sensors.filter { sensor -> sensor.type == SensorType.TEMPERATURE }.flatMap { sensor -> sensor.measures }
+            val temperatureMeasures = area.sensors.filter { sensor -> sensor.isActive && sensor.type == SensorType.TEMPERATURE }.flatMap { sensor -> sensor.measures }
             val avgTemperature = area.sensors
-                .filter { sensor -> sensor.type == SensorType.TEMPERATURE }
+                .filter { sensor -> sensor.isActive && sensor.type == SensorType.TEMPERATURE }
                 .map { sensor -> sensor.measures[sensor.measures.lastIndex].value }
                 .average()
                 .toInt()
@@ -123,10 +142,21 @@ class UserDeviceService(
                 temperature = avgTemperature,
                 illuminance = avgIlluminance,
                 nextWateringTime = Instant.now(), // TODO
-                humidityMeasures = humidityMeasures.map { measure -> AreaSensorResponse(measure.timestamp, measure.value) },
-                illuminanceMeasures = illuminanceMeasures.map { measure -> AreaSensorResponse(measure.timestamp, measure.value) },
-                temperatureMeasures = temperatureMeasures.map { measure -> AreaSensorResponse(measure.timestamp, measure.value) }
+                humidityMeasures = humidityMeasures.map { measure -> AreaSensorMeasuresResponse(measure.timestamp, measure.value) },
+                illuminanceMeasures = illuminanceMeasures.map { measure -> AreaSensorMeasuresResponse(measure.timestamp, measure.value) },
+                temperatureMeasures = temperatureMeasures.map { measure -> AreaSensorMeasuresResponse(measure.timestamp, measure.value) }
             ))
+        }
+
+        return result
+    }
+
+    fun getAreasInfo(userId: Int): List<SimpleAreaResponse> {
+        val result = mutableListOf<SimpleAreaResponse>()
+
+        val areas = getUserById(userId).device!!.areas
+        for (area in areas) {
+            result.add(SimpleAreaResponse(area.id, area.sensors.map { s -> SimpleAreaSensorResponse(s.guid, s.type.name, s.type.unit, s.isActive) }))
         }
 
         return result
