@@ -78,24 +78,24 @@ class UserDeviceController(
     ): Unit =
         userDeviceService.irrigateArea(userId, areaId)
 
-    @PutMapping("/areas/{areaId}/link-sensor/{sensorId}")
+    @PutMapping("/areas/{areaId}/link-sensor/{sensorGuid}")
     @ApiOperation("Add selected sensor to selected area.")
     @ResponseStatus(HttpStatus.OK)
     fun linkSensorToArea(
         @ApiParam(hidden = true) @RequestAttribute("id") userId: Int,
-        @PathVariable("areaId") areaId: String,
-        @PathVariable("sensorId") sensorId: String
-    ): List<AreaResponse> =
-        userDeviceService.linkSensorToArea(userId, areaId, sensorId)
+        @PathVariable("areaId") areaId: Int,
+        @PathVariable("sensorGuid") sensorGuid: String
+    ): List<SimpleAreaResponse> =
+        userDeviceService.linkSensorToArea(userId, areaId, sensorGuid)
 
-    @PutMapping("/areas/unlink-sensor/{sensorId}")
+    @PutMapping("/areas/unlink-sensor/{sensorGuid}")
     @ApiOperation("Remove selected sensor from its area.")
     @ResponseStatus(HttpStatus.OK)
     fun unlinkSensorFromArea(
         @ApiParam(hidden = true) @RequestAttribute("id") userId: Int,
-        @PathVariable("sensorId") sensorId: String
-    ): List<AreaResponse> =
-        userDeviceService.unlinkSensorFromArea(userId, sensorId)
+        @PathVariable("sensorGuid") sensorGuid: String
+    ): List<SimpleAreaResponse> =
+        userDeviceService.unlinkSensorFromArea(userId, sensorGuid)
 
     @GetMapping("/sensors")
     @ApiOperation("Get all sensors.")
@@ -107,7 +107,7 @@ class UserDeviceController(
         userDeviceService.getAllSensors(userId, active)
 
     @GetMapping("/areas")
-    @ApiOperation("Get all areas.")
+    @ApiOperation("Get all areas measures.")
     @ResponseStatus(HttpStatus.OK)
     fun getAllAreasMeasures(@ApiParam(hidden = true) @RequestAttribute("id") userId: Int) : List<AreaResponse>
     {
@@ -115,7 +115,7 @@ class UserDeviceController(
     }
 
     @GetMapping("/areas-info")
-    @ApiOperation("Get all areas informations.")
+    @ApiOperation("Get all areas simple info.")
     @ResponseStatus(HttpStatus.OK)
     fun getAreasInfo(@ApiParam(hidden = true) @RequestAttribute("id") userId: Int) : List<SimpleAreaResponse>
     {

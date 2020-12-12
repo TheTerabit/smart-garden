@@ -5,4 +5,6 @@ import org.springframework.stereotype.Repository
 import pl.put.smartgarden.domain.device.Area
 
 @Repository
-interface AreaRepository : JpaRepository<Area, Int>
+interface AreaRepository : JpaRepository<Area, Int> {
+    fun getAllByDeviceId(deviceId: Int) : List<Area>
+}

@@ -2,10 +2,13 @@ package pl.put.smartgarden.domain.user
 
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import pl.put.smartgarden.domain.SmartGardenException
 import pl.put.smartgarden.domain.device.Device
 import pl.put.smartgarden.domain.device.SensorType
+import pl.put.smartgarden.domain.device.repository.AreaRepository
 import pl.put.smartgarden.domain.device.repository.DeviceRepository
+import pl.put.smartgarden.domain.device.repository.SensorRepository
 import pl.put.smartgarden.domain.user.dto.request.IrrigationLevelRequest
 import pl.put.smartgarden.domain.user.dto.request.LocationRequest
 import pl.put.smartgarden.domain.user.dto.request.NextIrrigationRequest
@@ -21,10 +24,13 @@ import pl.put.smartgarden.domain.user.dto.response.UserGeneralSettingsResponse
 import pl.put.smartgarden.domain.user.repository.UserRepository
 import java.time.Instant
 
+@Transactional
 @Service
 class UserDeviceService(
     val deviceRepository: DeviceRepository,
-    val userRepository: UserRepository
+    val userRepository: UserRepository,
+    val areaRepository: AreaRepository,
+    val sensorRepository: SensorRepository
 ) {
 
     fun createAndSaveDevice(deviceGuid: String, latitude: Double, longitude: Double, userId: Int): Device {
@@ -93,12 +99,37 @@ class UserDeviceService(
         TODO("Not yet implemented")
     }
 
-    fun linkSensorToArea(userId: Int, areaId: String, sensorId: String): List<AreaResponse> {
-        TODO("Not yet implemented")
+    fun linkSensorToArea(userId: Int, areaId: Int, sensorGuid: String): List<SimpleAreaResponse> {
+        val user = getUserById(userId)
+        val device = user.device!!
+        val sensor = device.sensors.first { sensor -> sensor.guid == sensorGuid }
+        val area = device.areas.first { area -> area.id == areaId }
+
+        sensor.areaId = area.id
+        if (area.sensors.firstOrNull { s -> sensorGuid == s.guid } == null)
+        {
+            area.sensors.add(sensor)
+
+            sensorRepository.saveAndFlush(sensor)
+            areaRepository.saveAndFlush(area)
+        }
+
+        return getAreasInfo(userId)
     }
 
-    fun unlinkSensorFromArea(userId: Int, sensorId: String): List<AreaResponse> {
-        TODO("Not yet implemented")
+    fun unlinkSensorFromArea(userId: Int, sensorGuid: String): List<SimpleAreaResponse> {
+        val user = getUserById(userId)
+        val device = user.device!!
+        if (device.sensors.firstOrNull { sensor -> sensor.guid == sensorGuid } == null)
+        {
+            throw SmartGardenException("There is no sensor with such guid", HttpStatus.BAD_REQUEST)
+        }
+
+        val sensor = sensorRepository.findByGuid(sensorGuid).orElseThrow { SmartGardenException("There is no sensor with such guid", HttpStatus.BAD_REQUEST) }
+        sensor.areaId = null
+        sensorRepository.saveAndFlush(sensor)
+
+        return getAreasInfo(userId)
     }
 
     fun getAllSensors(userId: Int, active: Boolean?): List<SensorResponse> {
