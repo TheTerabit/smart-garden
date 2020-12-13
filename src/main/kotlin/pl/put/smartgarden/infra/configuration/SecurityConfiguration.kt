@@ -50,7 +50,8 @@ class SecurityConfiguration : WebSecurityConfigurerAdapter() {
     fun userFilterRegistrationBean(filter: JwtFilter): FilterRegistrationBean<Filter> {
         val filterRegistrationBean = FilterRegistrationBean<Filter>()
         filterRegistrationBean.filter = filter
-        filterRegistrationBean.addUrlPatterns("/users/me", "/users/me/*", "/users/me/*/*", "/users/me/*/*/*", "/users/logout", "/devices/*")
+        filterRegistrationBean.addUrlPatterns("/users/me", "/users/me/*", "/users/me/*/*", "/users/me/*/*/*",
+            "/users/logout", "/devices/irrigation-decisions", "/devices/measures")
         filterRegistrationBean.order = 2
         return filterRegistrationBean
     }
