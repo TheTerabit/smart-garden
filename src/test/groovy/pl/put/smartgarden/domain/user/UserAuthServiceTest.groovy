@@ -21,7 +21,6 @@ class UserAuthServiceTest extends Specification {
 
     def userAuthService = new UserAuthService(
             mailService,
-            userRepository,
             verificationTokenRepository,
             revokedTokenRepository,
             securityService,
@@ -87,49 +86,6 @@ class UserAuthServiceTest extends Specification {
 
         when:
         userAuthService.getUserFromVerificationToken(token)
-
-        then:
-        thrown SmartGardenException
-    }
-
-    def "Should retrieve user from json web token"() {
-        given: "token with subject set to 123, encoded with secretKey and HS512 algorithm"
-        def token = Jwts.builder()
-                .setSubject(123.toString())
-                .claim("roles", "USER")
-                .setIssuedAt()
-                .signWith(SignatureAlgorithm.HS512, secretKey)
-                .compact()
-
-        and: "token is not revoked"
-        revokedTokenRepository.existsById(token) >> false
-
-        and: "user with id 123 is enabled, optional is necessary to get rid off Groovy Cast exception"
-        def user = new User("username", "email@spam.com", "encryptedPassword", true, null)
-        user.id = 123
-        userRepository.findById(123) >> new Optional<User>(user)
-
-        when:
-        def result = userAuthService.getUserFromJWToken(token)
-
-        then:
-        result == user
-    }
-
-    def "Should not retrieve user from json web token when it was revoked"() {
-        given: "token with subject set to 123, encoded with secretKey and HS512 algorithm"
-        def token = Jwts.builder()
-                .setSubject(123.toString())
-                .claim("roles", "USER")
-                .setIssuedAt()
-                .signWith(SignatureAlgorithm.HS512, secretKey)
-                .compact()
-
-        and: "token is revoked"
-        revokedTokenRepository.existsById(token) >> true
-
-        when:
-        userAuthService.getUserFromJWToken(token)
 
         then:
         thrown SmartGardenException
