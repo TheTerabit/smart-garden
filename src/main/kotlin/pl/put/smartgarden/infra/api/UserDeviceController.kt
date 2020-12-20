@@ -59,6 +59,14 @@ class UserDeviceController(
     fun getIrrigationSettings(@ApiParam(hidden = true) @RequestAttribute("id") userId: Int): List<AreaSettingsResponse> =
         userDeviceService.getAreasSetting(userId)
 
+    @GetMapping("/areas/{areaId}/settings")
+    @ApiOperation("Get settings for all areas.")
+    @ResponseStatus(HttpStatus.OK)
+    fun getIrrigationSettings(
+        @ApiParam(hidden = true) @RequestAttribute("id") userId: Int,
+        @PathVariable("areaId") areaId: Int): AreaSettingsResponse =
+        userDeviceService.getAreaSettings(userId, areaId)
+
     @PutMapping("/areas/{areaId}/next-irrigation")
     @ApiOperation("Set next irrigation time for selected area.")
     @ResponseStatus(HttpStatus.OK)
@@ -109,16 +117,17 @@ class UserDeviceController(
     @GetMapping("/areas")
     @ApiOperation("Get all areas measures.")
     @ResponseStatus(HttpStatus.OK)
-    fun getAllAreasMeasures(@ApiParam(hidden = true) @RequestAttribute("id") userId: Int) : List<AreaResponse>
-    {
-        return userDeviceService.getAllAreasMeasures(userId)
+    fun getAllAreasMeasures(
+        @ApiParam(hidden = true) @RequestAttribute("id") userId: Int,
+        @RequestParam("from", required = false) from: Instant?,
+        @RequestParam("to", required = false) to: Instant?): List<AreaResponse> {
+        return userDeviceService.getAllAreasMeasures(userId, from, to)
     }
 
     @GetMapping("/areas-info")
     @ApiOperation("Get all areas simple info.")
     @ResponseStatus(HttpStatus.OK)
-    fun getAreasInfo(@ApiParam(hidden = true) @RequestAttribute("id") userId: Int) : List<SimpleAreaResponse>
-    {
+    fun getAreasInfo(@ApiParam(hidden = true) @RequestAttribute("id") userId: Int): List<SimpleAreaResponse> {
         return userDeviceService.getAreasInfo(userId)
     }
 

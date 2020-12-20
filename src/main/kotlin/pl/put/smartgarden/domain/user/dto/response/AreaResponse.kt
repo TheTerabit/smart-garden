@@ -1,5 +1,6 @@
 package pl.put.smartgarden.domain.user.dto.response
 
+import pl.put.smartgarden.domain.device.TimeUnit
 import java.time.Instant
 
 data class AreaResponse(
@@ -13,8 +14,18 @@ data class AreaResponse(
     var humidityMeasures: List<AreaSensorMeasuresResponse>
 )
 
+data class AreaSettingsResponse(
+    val areaId: Int,
+    val frequencyUnit: TimeUnit,
+    val frequencyValue: Int,
+    val isIrrigationEnabled: Boolean,
+    val isWeatherEnabled: Boolean,
+    val strength: Int,
+    val threshold: Int
+)
+
 data class AreaSensorMeasuresResponse(
-    val timestamp : Instant,
+    val timestamp: Instant,
     val value: Int
 )
 
@@ -37,7 +48,7 @@ data class MeasureResponse(
     val measures: List<MeasureMeasuresResponse>
 )
 
-class MeasureMeasuresResponse (
+class MeasureMeasuresResponse(
     val timestamp: Instant,
     val value: Int
 )

@@ -2,6 +2,7 @@ package pl.put.smartgarden.domain.user
 
 import pl.put.smartgarden.domain.device.*
 import pl.put.smartgarden.domain.device.repository.AreaRepository
+import pl.put.smartgarden.domain.device.repository.AreaSettingsRepository
 import pl.put.smartgarden.domain.device.repository.DeviceRepository
 import pl.put.smartgarden.domain.device.repository.SensorRepository
 import pl.put.smartgarden.domain.user.dto.request.LocationRequest
@@ -16,8 +17,9 @@ class UserDeviceServiceTest extends Specification {
     def userRepository = Mock(UserRepository)
     def areaRepository = Mock(AreaRepository)
     def sensorRepository = Mock(SensorRepository)
+    def settingsRepository = Mock(AreaSettingsRepository)
 
-    def userDeviceService = new UserDeviceService(deviceRepository, userRepository, areaRepository, sensorRepository)
+    def userDeviceService = new UserDeviceService(deviceRepository, userRepository, areaRepository, sensorRepository, settingsRepository)
 
     def "Should be able to create and save device "() {
         given:
@@ -160,7 +162,7 @@ class UserDeviceServiceTest extends Specification {
         illuminanceMeasures.unit == SensorType.ILLUMINANCE.unit
         illuminanceMeasures.measures.size() == 2
 
-        when:  "Retrieving area measures within time range from second area"
+        when: "Retrieving area measures within time range from second area"
         def measureResponses2 = userDeviceService.getAreaMeasures(213, 2, Instant.ofEpochSecond(1234550), Instant.ofEpochSecond(1234650))
 
         then: "There should be only one measure within given range"
@@ -175,5 +177,9 @@ class UserDeviceServiceTest extends Specification {
         def temperatureMeasure = temperatureMeasures.get(0)
         temperatureMeasure.timestamp == Instant.ofEpochSecond(1234600)
         temperatureMeasure.value == 35
+    }
+
+    def ""() {
+
     }
 }
