@@ -138,7 +138,7 @@ class DeviceFacade(
 
     private fun isGoingToRain(area: Area): Boolean {
         if (area.settings.irrigateNow) {
-            return true
+            return false
         }
         if (area.settings.isWeatherEnabled) {
             return weatherService.isGoingToRain(deviceService.getDeviceById(area.deviceId).get())
@@ -156,7 +156,7 @@ class DeviceFacade(
                 if (measures.size < 2) {
                     return 0
                 } else {
-                    averageMeasures.add((measures[0].value + measures[1].value)/2)
+                    averageMeasures.add((measures[0].value + measures[1].value) / 2)
                 }
             }
         return (averageMeasures.average() - 20 * 0.1).roundToInt()// TODO - zmienić odpowiednio to równanie

@@ -1,8 +1,10 @@
 package pl.put.smartgarden.domain.device
 
+import org.hibernate.annotations.Fetch
+import org.hibernate.annotations.FetchMode
 import org.hibernate.annotations.GenericGenerator
 import java.time.Instant
-import java.util.Collections
+import java.util.*
 import javax.persistence.CascadeType
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -28,12 +30,26 @@ class Device(
     @GeneratedValue(generator="increment")
     @GenericGenerator(name="increment", strategy = "increment")
     var id: Int = 0
-    @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
+    @Fetch(value = FetchMode.SUBSELECT)
+    @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = [CascadeType.ALL])
     @JoinColumn(name = "device_id", referencedColumnName = "id")
     var sensors: MutableList<Sensor> = Collections.emptyList()
-    @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
+    @Fetch(value = FetchMode.SUBSELECT)
+    @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = [CascadeType.ALL])
     @JoinColumn(name = "device_id", referencedColumnName = "id")
     var areas: MutableList<Area> = Collections.emptyList()
+
+    override fun equals(other: Any?): Boolean =
+        (other is Device)
+            && id == other.id
+            //&& sensors == other.sensors
+            //&& areas.equals(other.areas)
+            && userId == other.userId
+            && latitude == other.latitude
+            && guid == other.guid
+            && longitude == other.longitude
+
+    override fun hashCode(): Int = Objects.hash(id)
 }
 
 @Entity
@@ -65,11 +81,23 @@ class Sensor(
     @GenericGenerator(name="increment", strategy = "increment")
     var id: Int = 0
     var isActive: Boolean = true
-    @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
+    @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = [CascadeType.ALL])
     @JoinColumn(name = "sensor_id", referencedColumnName = "id")
     var measures: MutableList<Measure> = Collections.emptyList()
     @Column(name = "area_id")
     var areaId: Int? = null
+
+    override fun equals(other: Any?): Boolean =
+        (other is Sensor)
+            && id == other.id
+            && isActive == other.isActive
+            //&& measures == other.measures
+            && areaId == other.areaId
+            && type == other.type
+            && guid == other.guid
+            && deviceId == other.deviceId
+
+    override fun hashCode(): Int = Objects.hash(id)
 }
 
 @Entity
@@ -85,6 +113,15 @@ class Measure(
     @GeneratedValue(generator="increment")
     @GenericGenerator(name="increment", strategy = "increment")
     var id: Int = 0
+
+    override fun equals(other: Any?): Boolean =
+        (other is Measure)
+            && id == other.id
+            && timestamp.epochSecond == other.timestamp.epochSecond
+            && value == other.value
+            && sensorId == other.sensorId
+
+    override fun hashCode(): Int = Objects.hash(id)
 }
 
 @Entity
@@ -95,10 +132,12 @@ class Area(
     var settings: AreaSettings,
     @Column(name = "device_id")
     var deviceId: Int,
-    @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
+    @Fetch(value = FetchMode.SUBSELECT)
+    @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = [CascadeType.ALL])
     @JoinColumn(name = "area_id", referencedColumnName = "id")
     var sensors: MutableList<Sensor>,
-    @OneToMany(orphanRemoval = true, cascade = [CascadeType.ALL])
+    @Fetch(value = FetchMode.SUBSELECT)
+    @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = [CascadeType.ALL])
     @JoinColumn(name = "area_id", referencedColumnName = "id")
     var irrigations: MutableList<Irrigation>
 ) {
