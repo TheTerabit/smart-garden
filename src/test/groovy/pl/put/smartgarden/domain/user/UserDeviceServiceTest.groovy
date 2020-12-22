@@ -178,8 +178,4 @@ class UserDeviceServiceTest extends Specification {
         temperatureMeasure.timestamp == Instant.ofEpochSecond(1234600)
         temperatureMeasure.value == 35
     }
-
-    def ""() {
-
-    }
 }
