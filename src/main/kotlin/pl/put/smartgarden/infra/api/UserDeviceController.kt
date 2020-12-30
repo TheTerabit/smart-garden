@@ -98,7 +98,7 @@ class UserDeviceController(
         @ApiParam(hidden = true) @RequestAttribute("id") userId: Int,
         @PathVariable("areaId") areaId: Int) = userDeviceService.irrigateArea(userId, areaId)
 
-    @PutMapping("/areas/{areaId}/sensors}")
+    @PutMapping("/areas/{areaId}/sensors")
     @ApiOperation("Add sensor to selected area.")
     @ResponseStatus(HttpStatus.OK)
     fun linkSensorToArea(
