@@ -56,7 +56,7 @@ class UserGeneralSettingsController(
     }
 
     @PutMapping("/change-email")
-    @ApiOperation("Change currently logged user email.")
+    @ApiOperation("NOT IMPLEMENTED Change currently logged user email.")
     @ApiResponses(value = [
         ApiResponse(code = 200, message = "OK"),
         ApiResponse(code = 400, message = "Bad request"),
@@ -69,7 +69,7 @@ class UserGeneralSettingsController(
     }
 
     @PutMapping("/change-username")
-    @ApiOperation("Change currently logged user username.")
+    @ApiOperation("NOT IMPLEMENTED Change currently logged user username.")
     @ApiResponses(value = [
         ApiResponse(code = 200, message = "OK"),
         ApiResponse(code = 400, message = "Bad request"),

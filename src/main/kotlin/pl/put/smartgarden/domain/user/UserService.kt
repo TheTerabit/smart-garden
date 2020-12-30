@@ -21,6 +21,7 @@ class UserService(
     private val userRepository: UserRepository
 ) {
 
+    /** Creates new user account. */
     fun signUpUser(userDto: UserSignUpRequest) =
         if (isUserUnique(userDto)) {
             var user = authService.createUser(userDto)
@@ -35,9 +36,11 @@ class UserService(
             throw UserAlreadyExistsException("User with this name or email already exists.", HttpStatus.CONFLICT)
         }
 
+    /** Checks if user doesn't exist already. */
     private fun isUserUnique(userRequest: UserSignUpRequest): Boolean =
         userRepository.findByEmail(userRequest.email) == null && userRepository.findByUsername(userRequest.username) == null
 
+    /** Signs user in and generates JWT.*/
     fun signIn(userSignInRequest: UserSignInRequest): UserSignInResponse {
         val user = userRepository.findByEmail(userSignInRequest.email)
 
@@ -52,12 +55,14 @@ class UserService(
         )
     }
 
+    /** Enables user if email verification token is correct. */
     fun enableUserIfValid(token: String) {
         val user = authService.getUserFromVerificationToken(token)
         user.enabled = true
         userRepository.save(user)
     }
 
+    /** Retrieves general user settings. */
     fun getUserGeneralSettings(userId: Int): UserGeneralSettingsResponse {
         val user = getUserById(userId)
 
@@ -70,10 +75,12 @@ class UserService(
         )
     }
 
+    /** Saves JWT to prevent access for this token in the future. */
     fun signOut(token: String) {
         authService.revokeToken(token);
     }
 
+    /** Find user by given id. */
     private fun getUserById(id: Int): User {
         val userOptional = userRepository.findById(id)
 
@@ -82,6 +89,7 @@ class UserService(
         return userOptional.get()
     }
 
+    /** Replaces old password with new one. */
     fun changePassword(userId: Int, request: UserChangePasswordRequest): UserGeneralSettingsResponse {
         val user = getUserById(userId)
         if (authService.isUserPasswordCorrect(request.oldPassword, user.password)) {
