@@ -4,21 +4,25 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import pl.put.smartgarden.domain.SmartGardenException
+import pl.put.smartgarden.domain.device.Area
+import pl.put.smartgarden.domain.device.AreaSettings
 import pl.put.smartgarden.domain.device.Device
+import pl.put.smartgarden.domain.device.Irrigation
+import pl.put.smartgarden.domain.device.Sensor
 import pl.put.smartgarden.domain.device.SensorType
 import pl.put.smartgarden.domain.device.repository.AreaRepository
 import pl.put.smartgarden.domain.device.repository.AreaSettingsRepository
 import pl.put.smartgarden.domain.device.repository.DeviceRepository
 import pl.put.smartgarden.domain.device.repository.SensorRepository
 import pl.put.smartgarden.domain.user.dto.request.AreaSettingsRequest
-import pl.put.smartgarden.domain.user.dto.request.IrrigationLevelRequest
+import pl.put.smartgarden.domain.user.dto.request.CreateAreaRequest
+import pl.put.smartgarden.domain.user.dto.request.LinkSensorRequest
 import pl.put.smartgarden.domain.user.dto.request.LocationRequest
-import pl.put.smartgarden.domain.user.dto.request.NextIrrigationRequest
+import pl.put.smartgarden.domain.user.dto.request.SensorUpdateRequest
+import pl.put.smartgarden.domain.user.dto.response.AreaIrrigationResponse
 import pl.put.smartgarden.domain.user.dto.response.AreaResponse
 import pl.put.smartgarden.domain.user.dto.response.AreaSensorMeasuresResponse
 import pl.put.smartgarden.domain.user.dto.response.AreaSettingsResponse
-import pl.put.smartgarden.domain.user.dto.response.MeasureMeasuresResponse
-import pl.put.smartgarden.domain.user.dto.response.MeasureResponse
 import pl.put.smartgarden.domain.user.dto.response.SensorResponse
 import pl.put.smartgarden.domain.user.dto.response.SimpleAreaResponse
 import pl.put.smartgarden.domain.user.dto.response.SimpleAreaSensorResponse
@@ -36,6 +40,7 @@ class UserDeviceService(
     val settingsRepository: AreaSettingsRepository
 ) {
 
+    /** Creates and saves device. */
     fun createAndSaveDevice(deviceGuid: String, latitude: Double, longitude: Double, userId: Int): Device {
         if (deviceRepository.existsByGuid(deviceGuid))
             throw SmartGardenException("Device is in use by another account.", HttpStatus.BAD_REQUEST)
@@ -49,16 +54,15 @@ class UserDeviceService(
         return deviceRepository.save(device)
     }
 
-    fun saveDevice(device: Device): Device = deviceRepository.save(device)
-
+    /** Updates device location. */
     fun setDeviceLocation(userId: Int, locationRequest: LocationRequest): UserGeneralSettingsResponse {
         val user = getUserById(userId)
+        val device = user.device!!
 
-        val device = user.device
-        device?.latitude = locationRequest.latitude
-        device?.longitude = locationRequest.longitude
+        device.latitude = locationRequest.latitude
+        device.longitude = locationRequest.longitude
 
-        val updatedDevice = saveDevice(device!!)
+        val updatedDevice = deviceRepository.save(device)
 
         return UserGeneralSettingsResponse(
             username = user.username,
@@ -69,34 +73,76 @@ class UserDeviceService(
         )
     }
 
-    fun getAreaMeasures(userId: Int, areaId: Int, from: Instant?, to: Instant?): List<MeasureResponse> {
-        if (from != null && to != null && from.isAfter(to)) throw SmartGardenException("From cannot be after to!", HttpStatus.BAD_REQUEST)
-
+    /** Retrieves measures for given area. */
+    fun getAreaMeasures(userId: Int, areaId: Int, dateFrom: Instant?, dateTo: Instant?): AreaResponse {
         val device = getUserById(userId).device!!
 
-        val areaFound = device.areas.firstOrNull { a -> a.id == areaId }
-            ?: throw SmartGardenException("Can't find area with given id: $areaId", HttpStatus.BAD_REQUEST)
+        val area = device.areas.firstOrNull { a -> a.id == areaId }
+            ?: throw SmartGardenException("Can't find area with given id: $areaId", HttpStatus.NOT_FOUND)
 
-        return areaFound.sensors
-            .filter { s -> s.isActive }
-            .map { s ->
-                MeasureResponse(s.guid, s.type.name, s.type.unit, s.measures
-                    .filter { m -> (from == null || m.timestamp.isAfter(from)) && (to == null || m.timestamp.isBefore(to)) }
-                    .map { m -> MeasureMeasuresResponse(m.timestamp, m.value) })
-            }
+        return getAreaMeasures(area, dateFrom, dateTo)
     }
 
-    fun setIrrigationLevel(userId: Int, areaId: String, irrigationLevelRequest: IrrigationLevelRequest): AreaSettingsResponse {
-        TODO("Not yet implemented")
+    /** Retrieves measures for given area (only from active sensors). */
+    private fun getAreaMeasures(area: Area, dateFrom: Instant?, dateTo: Instant?): AreaResponse {
+        if (dateFrom != null && dateTo != null && dateFrom.isAfter(dateTo)) throw SmartGardenException("From cannot be after to!", HttpStatus.BAD_REQUEST)
+
+        val humidityMeasures = area.sensors
+            .filter { sensor -> sensor.isActive && sensor.type == SensorType.HUMIDITY }
+            .flatMap { sensor -> sensor.measures }
+            .filter { measure -> (dateFrom == null || measure.timestamp.isAfter(dateFrom)) && (dateTo == null || measure.timestamp.isBefore(dateTo)) }
+        val avgHumidity = area.sensors
+            .filter { sensor -> sensor.isActive && sensor.type == SensorType.HUMIDITY }
+            .map { sensor -> sensor.measures[sensor.measures.lastIndex].value }
+            .average()
+            .toInt()
+
+        val illuminanceMeasures = area.sensors
+            .filter { sensor -> sensor.isActive && sensor.type == SensorType.ILLUMINANCE }
+            .flatMap { sensor -> sensor.measures }
+            .filter { measure -> (dateFrom == null || measure.timestamp.isAfter(dateFrom)) && (dateTo == null || measure.timestamp.isBefore(dateTo)) }
+        val avgIlluminance = area.sensors
+            .filter { sensor -> sensor.isActive && sensor.type == SensorType.ILLUMINANCE }
+            .map { sensor -> sensor.measures[sensor.measures.lastIndex].value }
+            .average()
+            .toInt()
+
+        val temperatureMeasures = area.sensors
+            .filter { sensor -> sensor.isActive && sensor.type == SensorType.TEMPERATURE }
+            .flatMap { sensor -> sensor.measures }
+            .filter { measure -> (dateFrom == null || measure.timestamp.isAfter(dateFrom)) && (dateTo == null || measure.timestamp.isBefore(dateTo)) }
+        val avgTemperature = area.sensors
+            .filter { sensor -> sensor.isActive && sensor.type == SensorType.TEMPERATURE }
+            .map { sensor -> sensor.measures[sensor.measures.lastIndex].value }
+            .average()
+            .toInt()
+
+        val irrigations = area.irrigations.sortedByDescending { it.timestamp }
+        var nextWateringTime: Instant? = null
+        if (irrigations.isNotEmpty()) {
+            nextWateringTime = irrigations[0].timestamp
+        }
+
+        return AreaResponse(
+            id = area.id,
+            humidity = avgHumidity,
+            temperature = avgTemperature,
+            illuminance = avgIlluminance,
+            nextWateringTime = nextWateringTime,
+            humidityMeasures = humidityMeasures.map { measure -> AreaSensorMeasuresResponse(measure.timestamp, measure.value) },
+            illuminanceMeasures = illuminanceMeasures.map { measure -> AreaSensorMeasuresResponse(measure.timestamp, measure.value) },
+            temperatureMeasures = temperatureMeasures.map { measure -> AreaSensorMeasuresResponse(measure.timestamp, measure.value) }
+        )
     }
 
+    /** Retrieves settings of all areas. */
     fun getAreasSetting(userId: Int): List<AreaSettingsResponse> {
         val userById = getUserById(userId)
         val device = userById.device!!
 
         return device.areas.map { area ->
             AreaSettingsResponse(
-                area.settings.areaId,
+                area.settings.areaId!!,
                 area.settings.frequencyUnit,
                 area.settings.frequencyValue,
                 area.settings.isIrrigationEnabled,
@@ -107,35 +153,59 @@ class UserDeviceService(
         }
     }
 
-    fun setAreaSettings(userId: Int, settings: AreaSettingsRequest) {
+    /** Updates area settings. */
+    fun setAreaSettings(userId: Int, areaId: Int, settings: AreaSettingsRequest): AreaSettingsResponse {
         val userById = getUserById(userId)
         val device = userById.device!!
+        val area = device.areas.firstOrNull { area -> area.id == areaId }
 
-        val currentSettings = device.areas.first { area -> area.id == settings.areaId }.settings
+        if (area != null) {
+            val currentSettings = area.settings
 
-        if (settings.threshold != null)
-            currentSettings.threshhold = settings.threshold
-        if (settings.frequencyUnit != null)
-            currentSettings.frequencyUnit = settings.frequencyUnit
-        if (settings.frequencyValue != null)
-            currentSettings.frequencyValue = settings.frequencyValue
-        if (settings.isIrrigationEnabled != null)
-            currentSettings.isIrrigationEnabled = settings.isIrrigationEnabled
-        if (settings.isWeatherEnabled != null)
-            currentSettings.isWeatherEnabled = settings.isWeatherEnabled
-        if (settings.strength != null)
-            currentSettings.strength = settings.strength
+            val areaSettings = setAreaSettings(settings, currentSettings)
 
-        settingsRepository.saveAndFlush(currentSettings)
+            return AreaSettingsResponse(
+                areaSettings.areaId!!,
+                areaSettings.frequencyUnit,
+                areaSettings.frequencyValue,
+                areaSettings.isIrrigationEnabled,
+                areaSettings.isWeatherEnabled,
+                areaSettings.strength,
+                areaSettings.threshhold
+            )
+        } else {
+            throw SmartGardenException("Can't find area with given id: $areaId.", HttpStatus.NOT_FOUND)
+        }
     }
 
+    /** Update area settings or create defaults if there are nulls. */
+    private fun setAreaSettings(settingsRequest: AreaSettingsRequest?, settings: AreaSettings): AreaSettings {
+        if (settingsRequest != null) {
+            if (settingsRequest.threshold != null)
+                settings.threshhold = settingsRequest.threshold
+            if (settingsRequest.frequencyUnit != null)
+                settings.frequencyUnit = settingsRequest.frequencyUnit
+            if (settingsRequest.frequencyValue != null)
+                settings.frequencyValue = settingsRequest.frequencyValue
+            if (settingsRequest.isIrrigationEnabled != null)
+                settings.isIrrigationEnabled = settingsRequest.isIrrigationEnabled
+            if (settingsRequest.isWeatherEnabled != null)
+                settings.isWeatherEnabled = settingsRequest.isWeatherEnabled
+            if (settingsRequest.strength != null)
+                settings.strength = settingsRequest.strength
+        }
+
+        return settingsRepository.saveAndFlush(settings)
+    }
+
+    /** Retrieve settings of given area. */
     fun getAreaSettings(userId: Int, areaId: Int): AreaSettingsResponse {
         val userById = getUserById(userId)
         val device = userById.device!!
         val areaSettings = device.areas.first { area -> area.id == areaId }.settings
 
         return AreaSettingsResponse(
-            areaSettings.areaId,
+            areaSettings.areaId!!,
             areaSettings.frequencyUnit,
             areaSettings.frequencyValue,
             areaSettings.isIrrigationEnabled,
@@ -145,43 +215,79 @@ class UserDeviceService(
         )
     }
 
-    fun setNextIrrigationTime(userId: Int, areaId: String, irrigationTimeRequest: NextIrrigationRequest): NextIrrigationRequest {
-        TODO("Not yet implemented")
-    }
-
-    fun irrigateArea(userId: Int, areaId: String) {
-        TODO("Not yet implemented")
-    }
-
-    fun linkSensorToArea(userId: Int, areaId: Int, sensorGuid: String): List<SimpleAreaResponse> {
+    /** Irrigate given area. */
+    fun irrigateArea(userId: Int, areaId: Int) {
         val user = getUserById(userId)
         val device = user.device!!
-        val sensor = device.sensors.first { sensor -> sensor.guid == sensorGuid }
-        val area = device.areas.first { area -> area.id == areaId }
+        val area = device.areas.firstOrNull { area -> area.id == areaId }
 
-        if (area.sensors.firstOrNull { s -> sensorGuid == s.guid } == null) {
+        if (area != null) {
+            val settings = area.settings
+            settings.irrigateNow = true
+
+            settingsRepository.saveAndFlush(settings)
+        } else {
+            throw SmartGardenException("Can't find area with given id: $areaId.", HttpStatus.NOT_FOUND)
+        }
+    }
+
+    /** Link sensor to area (and unlink from old one). */
+    fun linkSensorToArea(userId: Int, areaId: Int, linkSensorRequest: LinkSensorRequest): SimpleAreaResponse {
+        val user = getUserById(userId)
+        val device = user.device!!
+        val sensor = device.sensors.firstOrNull { sensor -> sensor.guid == linkSensorRequest.sensorGuid }
+
+        if (sensor != null) {
+            val area = device.areas.firstOrNull { area -> area.id == areaId }
+
+            if (area != null) {
+                val updatedArea = linkSensorToArea(area, sensor)
+
+                return createSimpleAreaResponse(updatedArea)
+            } else {
+                throw SmartGardenException("Can't find area with given id: $areaId.", HttpStatus.NOT_FOUND)
+            }
+        } else {
+            throw SmartGardenException("Sensor is not connected to your device.", HttpStatus.BAD_REQUEST)
+        }
+    }
+
+    /** Link sensor to area if it's not already linked to it. */
+    private fun linkSensorToArea(area: Area, sensor: Sensor): Area {
+        if (area.sensors.firstOrNull { s -> sensor.guid == s.guid } == null) {
             area.sensors.add(sensor)
 
-            areaRepository.saveAndFlush(area)
+            return areaRepository.saveAndFlush(area)
         }
 
-        return getAreasInfo(userId)
+        return area
     }
 
-    fun unlinkSensorFromArea(userId: Int, sensorGuid: String): List<SimpleAreaResponse> {
+    /** Unlink sensor form area - sensor will be not available in given area, but it's still connected to device. */
+    fun unlinkSensorFromArea(userId: Int, areaId: Int, sensorGuid: String): SimpleAreaResponse {
         val user = getUserById(userId)
         val device = user.device!!
-        if (device.sensors.firstOrNull { sensor -> sensor.guid == sensorGuid } == null) {
-            throw SmartGardenException("There is no sensor with such guid", HttpStatus.BAD_REQUEST)
+        val area = device.areas.firstOrNull { area -> area.id == areaId }
+
+        if (area != null) {
+            val sensor = area.sensors.firstOrNull { sensor -> sensor.guid == sensorGuid }
+
+            if (sensor != null) {
+                area.sensors.remove(sensor)
+                sensor.areaId = null
+                sensorRepository.saveAndFlush(sensor)
+
+                return createSimpleAreaResponse(area)
+            } else {
+                throw SmartGardenException("There is no sensor with given guid: $sensorGuid, connected to area: $areaId", HttpStatus.NOT_FOUND)
+            }
+        } else {
+            throw SmartGardenException("There is no area with given id: $areaId", HttpStatus.NOT_FOUND)
         }
 
-        val sensor = sensorRepository.findByGuid(sensorGuid).orElseThrow { SmartGardenException("There is no sensor with such guid", HttpStatus.BAD_REQUEST) }
-        sensor.areaId = null
-        sensorRepository.saveAndFlush(sensor)
-
-        return getAreasInfo(userId)
     }
 
+    /** Retrieves all sensors. */
     fun getAllSensors(userId: Int, active: Boolean?): List<SensorResponse> {
         val device = getUserById(userId).device!!
 
@@ -190,66 +296,109 @@ class UserDeviceService(
             .map { s -> SensorResponse(s.guid, s.type.name, s.type.unit, s.areaId, s.isActive) }
     }
 
+    /** Retrieves all sensors. */
+    fun getSensor(userId: Int, sensorGuid: String): SensorResponse {
+        val device = getUserById(userId).device!!
+
+        val sensor = device.sensors.firstOrNull { s -> s.guid == sensorGuid }
+        if (sensor != null) {
+            return SensorResponse(sensor.guid, sensor.type.name, sensor.type.unit, sensor.areaId, sensor.isActive)
+        } else {
+            throw SmartGardenException("Can't find sensor with given guid: $sensorGuid", HttpStatus.NOT_FOUND)
+        }
+    }
+
+    /** Retrieves measures from all areas in given user device. */
     fun getAllAreasMeasures(userId: Int, dateFrom: Instant?, dateTo: Instant?): List<AreaResponse> {
         val user = getUserById(userId)
         val areas = user.device?.areas!!
         val result = mutableListOf<AreaResponse>()
 
         for (area in areas) {
-            val humidityMeasures = area.sensors
-                .filter { sensor -> sensor.isActive && sensor.type == SensorType.HUMIDITY }
-                .flatMap { sensor -> sensor.measures }
-                .filter { measure -> (dateFrom == null || measure.timestamp.isAfter(dateFrom)) && (dateTo == null || measure.timestamp.isBefore(dateTo)) }
-            val avgHumidity = area.sensors
-                .filter { sensor -> sensor.isActive && sensor.type == SensorType.HUMIDITY }
-                .map { sensor -> sensor.measures[sensor.measures.lastIndex].value }
-                .average()
-                .toInt()
-
-            val illuminanceMeasures = area.sensors
-                .filter { sensor -> sensor.isActive && sensor.type == SensorType.ILLUMINANCE }
-                .flatMap { sensor -> sensor.measures }
-                .filter { measure -> (dateFrom == null || measure.timestamp.isAfter(dateFrom)) && (dateTo == null || measure.timestamp.isBefore(dateTo)) }
-            val avgIlluminance = area.sensors
-                .filter { sensor -> sensor.isActive && sensor.type == SensorType.ILLUMINANCE }
-                .map { sensor -> sensor.measures[sensor.measures.lastIndex].value }
-                .average()
-                .toInt()
-
-            val temperatureMeasures = area.sensors
-                .filter { sensor -> sensor.isActive && sensor.type == SensorType.TEMPERATURE }
-                .flatMap { sensor -> sensor.measures }
-                .filter { measure -> (dateFrom == null || measure.timestamp.isAfter(dateFrom)) && (dateTo == null || measure.timestamp.isBefore(dateTo)) }
-            val avgTemperature = area.sensors
-                .filter { sensor -> sensor.isActive && sensor.type == SensorType.TEMPERATURE }
-                .map { sensor -> sensor.measures[sensor.measures.lastIndex].value }
-                .average()
-                .toInt()
-
-            result.add(AreaResponse(
-                id = area.id,
-                humidity = avgHumidity,
-                temperature = avgTemperature,
-                illuminance = avgIlluminance,
-                nextWateringTime = Instant.now(), // TODO
-                humidityMeasures = humidityMeasures.map { measure -> AreaSensorMeasuresResponse(measure.timestamp, measure.value) },
-                illuminanceMeasures = illuminanceMeasures.map { measure -> AreaSensorMeasuresResponse(measure.timestamp, measure.value) },
-                temperatureMeasures = temperatureMeasures.map { measure -> AreaSensorMeasuresResponse(measure.timestamp, measure.value) }
-            ))
+            result.add(getAreaMeasures(area, dateFrom, dateTo))
         }
 
         return result
     }
 
+    /** Retrieve simple informations of all areas. */
     fun getAreasInfo(userId: Int): List<SimpleAreaResponse> {
         val result = mutableListOf<SimpleAreaResponse>()
 
         val areas = getUserById(userId).device!!.areas
         for (area in areas) {
-            result.add(SimpleAreaResponse(area.id, area.sensors.map { s -> SimpleAreaSensorResponse(s.guid, s.type.name, s.type.unit, s.isActive) }))
+            result.add(createSimpleAreaResponse(area))
         }
 
         return result
+    }
+
+    /** Retrieve simple informations of one area. */
+    fun getAreaInfo(userId: Int, areaId: Int): SimpleAreaResponse {
+        val area = getUserById(userId).device!!.areas.firstOrNull { area -> area.id == areaId }
+        if (area != null) {
+            return createSimpleAreaResponse(area)
+        } else {
+            throw SmartGardenException("Can't find area with given id: $areaId", HttpStatus.NOT_FOUND)
+        }
+    }
+
+    /** Crate area. */
+    fun createArea(userId: Int, request: CreateAreaRequest): SimpleAreaResponse {
+        val user = getUserById(userId)
+        val device = user.device!!
+
+        val areaSettings = AreaSettings()
+        val area = Area(
+            settings = areaSettings,
+            deviceId = device.id,
+            sensors = mutableListOf(),
+            irrigations = mutableListOf()
+        )
+
+        areaRepository.save(area)
+        areaSettings.areaId = area.id
+        setAreaSettings(request.settings, areaSettings)
+
+        area.irrigations.add(Irrigation(timestamp = Instant.now(), amount = 0, areaId = area.id))
+        areaRepository.saveAndFlush(area)
+
+
+        for (sensorGuid in request.sensors) {
+            val sensor = device.sensors.firstOrNull { sensor -> sensor.guid == sensorGuid }
+            if (sensor != null) {
+                linkSensorToArea(area, sensor)
+            } else {
+                throw SmartGardenException("Can't find sensor with given guid: $sensorGuid", HttpStatus.NOT_FOUND)
+            }
+        }
+
+        return createSimpleAreaResponse(area)
+    }
+
+    private fun createSimpleAreaResponse(area: Area): SimpleAreaResponse {
+        return SimpleAreaResponse(area.id, AreaSettingsResponse(
+            area.settings.areaId!!,
+            area.settings.frequencyUnit,
+            area.settings.frequencyValue,
+            area.settings.isIrrigationEnabled,
+            area.settings.isWeatherEnabled,
+            area.settings.strength,
+            area.settings.threshhold
+        ), area.sensors.map { s -> SimpleAreaSensorResponse(s.guid, s.type.name, s.type.unit, s.isActive) })
+    }
+
+    fun deleteArea(userId: Int, areaId: Int) {
+        val user = getUserById(userId)
+        val device = user.device!!
+        val area = device.areas.firstOrNull { area -> area.id == areaId }
+
+        if (area != null) {
+            device.areas.remove(area)
+            areaRepository.delete(area)
+        } else {
+            throw SmartGardenException("Can't find area with given id: $areaId.", HttpStatus.NOT_FOUND)
+        }
     }
 
     private fun getUserById(id: Int): User {
@@ -258,5 +407,39 @@ class UserDeviceService(
         if (!userOptional.isPresent) throw SmartGardenException("Invalid token", HttpStatus.UNAUTHORIZED)
 
         return userOptional.get()
+    }
+
+    /** Retrieve all historical irrigations of given area. */
+    fun getIrrigations(userId: Int, areaId: Int, from: Instant?, to: Instant?): List<AreaIrrigationResponse> {
+        val user = getUserById(userId)
+        val device = user.device!!
+        val area = device.areas.firstOrNull { area -> area.id == areaId }
+
+        if (area != null) {
+            return area.irrigations
+                .filter { irrigation ->
+                    (from == null || irrigation.timestamp.isAfter(from))
+                        && (to == null || irrigation.timestamp.isBefore(to))
+                }
+                .map { irrigation -> AreaIrrigationResponse(irrigation.timestamp, irrigation.amount) }
+        } else {
+            throw SmartGardenException("Can't find area with given id: $areaId.", HttpStatus.NOT_FOUND)
+        }
+    }
+
+    /** Update sensor. */
+    fun updateSensor(userId: Int, sensorGuid: String, request: SensorUpdateRequest): SensorResponse {
+        val user = getUserById(userId)
+        val device = user.device!!
+        val sensor = device.sensors.firstOrNull { sensor -> sensor.guid == sensorGuid }
+
+        if (sensor != null) {
+            sensor.isActive = request.active
+            val updatedSensor = sensorRepository.saveAndFlush(sensor)
+
+            return SensorResponse(updatedSensor.guid, updatedSensor.type.name, updatedSensor.type.unit, updatedSensor.areaId, updatedSensor.isActive)
+        } else {
+            throw SmartGardenException("Can't find sensor with given guid: $sensorGuid", HttpStatus.NOT_FOUND)
+        }
     }
 }

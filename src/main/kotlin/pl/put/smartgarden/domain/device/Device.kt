@@ -167,7 +167,7 @@ class Irrigation(
 @Table(name = "area_settings")
 class AreaSettings(
     @Column(name = "area_id")
-    var areaId: Int,
+    var areaId: Int? = null,
     var frequencyValue: Int = 0,
     var frequencyUnit: TimeUnit = TimeUnit.DAY,
     var strength: Int = 0,

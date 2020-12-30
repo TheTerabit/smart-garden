@@ -43,18 +43,6 @@ class UserDeviceServiceTest extends Specification {
         result == device
     }
 
-    def "Should save device"() {
-        given:
-        def device = new Device("deviceGuid", 10, 12.3, 45.6)
-        deviceRepository.save(device) >> device
-
-        when:
-        def result = userDeviceService.saveDevice(device)
-
-        then:
-        result == device
-    }
-
     def "Should save device location"() {
         given:
         def device = new Device("guid", 10, 12.3, 45.6)
@@ -100,7 +88,7 @@ class UserDeviceServiceTest extends Specification {
                 new Measure(Instant.ofEpochSecond(1234577), 35, 2),
                 new Measure(Instant.ofEpochSecond(1234587), 46, 2),
                 new Measure(Instant.ofEpochSecond(1234597), 57, 2),
-                new Measure(Instant.ofEpochSecond(1234667), 60, 2))
+                new Measure(Instant.ofEpochSecond(1234668), 60, 2))
         def sensor3 = new Sensor(SensorType.ILLUMINANCE, "illuminanceGuid", 5645)
         sensor3.id = 3
         sensor3.measures = Arrays.asList(
@@ -134,48 +122,32 @@ class UserDeviceServiceTest extends Specification {
         device.areas = Arrays.asList(area1, area2)
 
         when: "Retrieving all area measures from first area"
-        def measureResponses = userDeviceService.getAreaMeasures(213, 1, null, null)
+        def areaResponse = userDeviceService.getAreaMeasures(213, 1, null, null)
 
         then: "Only measures from sensors connected to first area should be retrieved"
-        measureResponses.size() == 3
-        measureResponses
-                .stream()
-                .map({ m -> m.sensorGuid })
-                .collect(Collectors.toList())
-                .containsAll("humidityGuid", "humidityGuid2", "illuminanceGuid")
+        areaResponse.id == 1
+        areaResponse.humidity == 40 // average of last measures
+        areaResponse.humidityMeasures.size() == 10
 
-        def humidityMeasures = measureResponses.stream()
-                .filter({ o -> (o.sensorGuid == "humidityGuid") }).findFirst().get()
-        humidityMeasures.type == SensorType.HUMIDITY.name()
-        humidityMeasures.unit == SensorType.HUMIDITY.unit
-        humidityMeasures.measures.size() == 5
+        areaResponse.illuminance == 444
+        areaResponse.illuminanceMeasures.size() == 2
 
-        def humidity2Measures = measureResponses.stream()
-                .filter({ o -> (o.sensorGuid == "humidityGuid2") }).findFirst().get()
-        humidity2Measures.type == SensorType.HUMIDITY.name()
-        humidity2Measures.unit == SensorType.HUMIDITY.unit
-        humidity2Measures.measures.size() == 5
-
-        def illuminanceMeasures = measureResponses.stream()
-                .filter({ o -> (o.sensorGuid == "illuminanceGuid") }).findFirst().get()
-        illuminanceMeasures.type == SensorType.ILLUMINANCE.name()
-        illuminanceMeasures.unit == SensorType.ILLUMINANCE.unit
-        illuminanceMeasures.measures.size() == 2
+        areaResponse.temperature == 0 // there are no measures
+        areaResponse.temperatureMeasures.size() == 0
 
         when: "Retrieving area measures within time range from second area"
-        def measureResponses2 = userDeviceService.getAreaMeasures(213, 2, Instant.ofEpochSecond(1234550), Instant.ofEpochSecond(1234650))
+        def areaResponse2 = userDeviceService.getAreaMeasures(213, 2, Instant.ofEpochSecond(1234550), Instant.ofEpochSecond(1234650))
 
         then: "There should be only one measure within given range"
-        measureResponses2.size() == 1
-        def temperature = measureResponses2.get(0)
-        temperature.type == SensorType.TEMPERATURE.name()
-        temperature.unit == SensorType.TEMPERATURE.unit
-        temperature.sensorGuid == "temperatureGuid"
-        def temperatureMeasures = temperature.measures
+        areaResponse2.id == 2
+        areaResponse2.humidity == 0
+        areaResponse2.humidityMeasures.size() == 0
 
-        temperatureMeasures.size() == 1
-        def temperatureMeasure = temperatureMeasures.get(0)
-        temperatureMeasure.timestamp == Instant.ofEpochSecond(1234600)
-        temperatureMeasure.value == 35
+        areaResponse2.illuminance == 0
+        areaResponse2.illuminanceMeasures.size() == 0
+
+        areaResponse2.temperature == 46 // This is current temperature
+        areaResponse2.temperatureMeasures.size() == 1 // Other two are filtered out by date range
+        areaResponse2.temperatureMeasures[0].value == 35 // Other two are filtered out by date range
     }
 }
