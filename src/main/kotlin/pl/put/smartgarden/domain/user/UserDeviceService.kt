@@ -395,6 +395,7 @@ class UserDeviceService(
 
         if (area != null) {
             device.areas.remove(area)
+            settingsRepository.delete(area.settings)
             areaRepository.delete(area)
         } else {
             throw SmartGardenException("Can't find area with given id: $areaId.", HttpStatus.NOT_FOUND)
