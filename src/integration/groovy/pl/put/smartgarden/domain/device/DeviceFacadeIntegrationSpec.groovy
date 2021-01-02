@@ -72,7 +72,7 @@ class DeviceFacadeIntegrationSpec extends IntegrationSpec {
         def sensor7 = new Sensor(SensorType.ILLUMINANCE, "77777", 1)
         sensor7.id = 7
 
-        def measure1 = new Measure(measureTime, 1000, 3)
+        def measure1 = new Measure(measureTime, 1000, 3, null)
         measure1.id = 1
         sensor3.measures = [measure1]
 
