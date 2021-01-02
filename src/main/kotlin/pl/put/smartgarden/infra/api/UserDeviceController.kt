@@ -139,7 +139,7 @@ class UserDeviceController(
     @ResponseStatus(HttpStatus.OK)
     fun createArea(
         @ApiParam(hidden = true) @RequestAttribute("id") userId: Int,
-        @RequestBody createAreaRequest: CreateAreaRequest): SimpleAreaResponse {
+        @RequestBody createAreaRequest: CreateAreaRequest?): SimpleAreaResponse {
         return userDeviceService.createArea(userId, createAreaRequest)
     }
 
