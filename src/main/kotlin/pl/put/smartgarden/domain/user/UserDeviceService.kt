@@ -91,13 +91,26 @@ class UserDeviceService(
         val area = device.areas.firstOrNull { a -> a.id == areaId }
             ?: throw SmartGardenException("Can't find area with given id: $areaId", HttpStatus.NOT_FOUND)
 
-        var range = ChronoUnit.DAYS
-        if (dateFrom != null && dateTo != null) {
-            val seconds = Duration.between(dateFrom, dateTo).seconds
-            if (seconds <= 7200) {
+        var range = ChronoUnit.MINUTES
+
+        var from = dateFrom
+        var to = dateTo
+        if (from == null && to == null)
+        {
+            from = Instant.now().truncatedTo(ChronoUnit.DAYS)
+            to = Instant.now().truncatedTo(ChronoUnit.DAYS).plus(1, ChronoUnit.DAYS)
+        }
+
+        if (from != null && to != null) {
+            val seconds = Duration.between(from, to).seconds
+            if (seconds <= 86400) {
                 range = ChronoUnit.MINUTES
             } else if (seconds <= 604800) {
                 range = ChronoUnit.HOURS
+            }
+            else
+            {
+                range = ChronoUnit.DAYS
             }
         }
 
@@ -105,7 +118,7 @@ class UserDeviceService(
         device.sensors
             .filter { sensor -> sensor.areaId == areaId && sensor.isActive && sensor.type == SensorType.HUMIDITY }
             .flatMap { sensor -> sensor.measures }
-            .filter { measure -> (dateFrom == null || measure.timestamp.isAfter(dateFrom)) && (dateTo == null || measure.timestamp.isBefore(dateTo)) }
+            .filter { measure -> (from == null || measure.timestamp.isAfter(from)) && (to == null || measure.timestamp.isBefore(to)) }
             .forEach { measure ->
                 val timestamp = measure.timestamp.truncatedTo(range)
                 if (mapHumidity.containsKey(timestamp)) {
@@ -121,7 +134,7 @@ class UserDeviceService(
             .toList()
 
         var avgHumidity = 0
-        if (humidityMeasures.size != 0) {
+        if (humidityMeasures.isNotEmpty()) {
             avgHumidity = humidityMeasures[humidityMeasures.size - 1].value
         }
 
@@ -129,7 +142,7 @@ class UserDeviceService(
         device.sensors
             .filter { sensor -> sensor.areaId == areaId && sensor.isActive && sensor.type == SensorType.TEMPERATURE }
             .flatMap { sensor -> sensor.measures }
-            .filter { measure -> (dateFrom == null || measure.timestamp.isAfter(dateFrom)) && (dateTo == null || measure.timestamp.isBefore(dateTo)) }
+            .filter { measure -> (from == null || measure.timestamp.isAfter(from)) && (to == null || measure.timestamp.isBefore(to)) }
             .forEach { measure ->
                 val timestamp = measure.timestamp.truncatedTo(range)
                 if (mapTemperature.containsKey(timestamp)) {
@@ -145,7 +158,7 @@ class UserDeviceService(
             .toList()
 
         var avgTemperature = 0
-        if (temperatureMeasures.size != 0) {
+        if (temperatureMeasures.isNotEmpty()) {
             avgTemperature = temperatureMeasures[temperatureMeasures.size - 1].value
         }
 
@@ -153,7 +166,7 @@ class UserDeviceService(
         device.sensors
             .filter { sensor -> sensor.areaId == areaId && sensor.isActive && sensor.type == SensorType.ILLUMINANCE }
             .flatMap { sensor -> sensor.measures }
-            .filter { measure -> (dateFrom == null || measure.timestamp.isAfter(dateFrom)) && (dateTo == null || measure.timestamp.isBefore(dateTo)) }
+            .filter { measure -> (from == null || measure.timestamp.isAfter(from)) && (to == null || measure.timestamp.isBefore(to)) }
             .forEach { measure ->
                 val timestamp = measure.timestamp.truncatedTo(range)
                 if (mapIlluminance.containsKey(timestamp)) {
@@ -169,7 +182,7 @@ class UserDeviceService(
             .toList()
 
         var avgIlluminance = 0
-        if (illuminanceMeasures.size != 0) {
+        if (illuminanceMeasures.isNotEmpty()) {
             avgIlluminance = illuminanceMeasures[illuminanceMeasures.size - 1].value
         }
 
