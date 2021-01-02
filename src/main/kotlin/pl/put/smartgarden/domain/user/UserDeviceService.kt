@@ -342,9 +342,8 @@ class UserDeviceService(
             val sensor = area.sensors.firstOrNull { sensor -> sensor.guid == sensorGuid }
 
             if (sensor != null) {
-                area.sensors.remove(sensor)
                 sensor.areaId = null
-                sensorRepository.saveAndFlush(sensor)
+                sensorRepository.save(sensor)
 
                 return createSimpleAreaResponse(area)
             } else {
@@ -353,7 +352,6 @@ class UserDeviceService(
         } else {
             throw SmartGardenException("There is no area with given id: $areaId", HttpStatus.NOT_FOUND)
         }
-
     }
 
     /** Retrieves all sensors. */
