@@ -63,11 +63,13 @@ class DeviceFacade(
         val deviceId = securityService.getIdFromToken(token)
         val areaDecisionResponse = ArrayList<AreaDecisionResponse>()
         val irrigationSensors = sensorService.getIrrigationSensorsByDeviceId(deviceId)
-
+        val areas = areaService.getAllAreas()
+        val isGoingToRain = weatherService.isGoingToRain(deviceService.getDeviceById(deviceId).get())
         irrigationSensors.filter { sensor -> sensor.areaId != null }
+            .parallelStream()
             .forEach { sensor ->
-                val area = areaService.getAreaById(sensor.areaId!!)!!
-                val irrigationValue = calculateIrrigation(area)
+                val area = areas.first {it.id == sensor.areaId!!}
+                val irrigationValue = calculateIrrigation(area, isGoingToRain)
                 if (irrigationValue > 0) {
                     irrigationService.createIrrigation(area, irrigationValue)
                     areaDecisionResponse.add(AreaDecisionResponse(sensor.guid, irrigationValue))
@@ -84,7 +86,7 @@ class DeviceFacade(
         return areaDecisionResponse
     }
 
-    private fun calculateIrrigation(area: Area): Int {
+    private fun calculateIrrigation(area: Area, isGoingToRain: Boolean): Int {
         if (irrigationIsDisabled(area)) {
             return 0
         }
@@ -97,7 +99,7 @@ class DeviceFacade(
             return 0
         }
 
-        if (isGoingToRain(area)) {
+        if (isGoingToRain(area, isGoingToRain)) {
             return 0
         }
 
@@ -146,12 +148,12 @@ class DeviceFacade(
         return averageMeasures.average() < area.settings.threshhold
     }
 
-    private fun isGoingToRain(area: Area): Boolean {
+    private fun isGoingToRain(area: Area, isGoingToRain: Boolean): Boolean {
         if (area.settings.irrigateNow) {
             return false
         }
         if (area.settings.isWeatherEnabled) {
-            return weatherService.isGoingToRain(deviceService.getDeviceById(area.deviceId).get())
+            return isGoingToRain
         } else {
             return false
         }
