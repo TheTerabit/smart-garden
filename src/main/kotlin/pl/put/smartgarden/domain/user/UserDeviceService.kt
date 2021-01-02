@@ -379,15 +379,20 @@ class UserDeviceService(
     }
 
     private fun createSimpleAreaResponse(area: Area): SimpleAreaResponse {
-        return SimpleAreaResponse(area.id, AreaSettingsResponse(
-            area.settings.areaId!!,
-            area.settings.frequencyUnit,
-            area.settings.frequencyValue,
-            area.settings.isIrrigationEnabled,
-            area.settings.isWeatherEnabled,
-            area.settings.strength,
-            area.settings.threshhold
-        ), area.sensors.map { s -> SimpleAreaSensorResponse(s.guid, s.type.name, s.type.unit, s.isActive) })
+        return SimpleAreaResponse(
+            area.id,
+            AreaSettingsResponse(
+                area.settings.areaId!!,
+                area.settings.frequencyUnit,
+                area.settings.frequencyValue,
+                area.settings.isIrrigationEnabled,
+                area.settings.isWeatherEnabled,
+                area.settings.strength,
+                area.settings.threshhold
+            ),
+            area.sensors.map { s -> SimpleAreaSensorResponse(s.guid, s.type.name, s.type.unit, s.isActive) },
+            sensorRepository.findAllByAreaId(null).map { s -> SimpleAreaSensorResponse(s.guid, s.type.name, s.type.unit, s.isActive) }
+        )
     }
 
     fun deleteArea(userId: Int, areaId: Int) {
