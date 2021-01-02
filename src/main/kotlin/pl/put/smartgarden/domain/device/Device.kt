@@ -106,8 +106,10 @@ class Measure(
     var timestamp: Instant,
     var value: Int,
     @Column(name = "sensor_id")
-    var sensorId: Int
-) {
+    var sensorId: Int,
+    @Column(name = "area_id")
+    var areaId: Int? = null)
+{
     @Id
     @Column(name = "id")
     @GeneratedValue(generator="increment")
@@ -136,6 +138,10 @@ class Area(
     @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = [CascadeType.ALL])
     @JoinColumn(name = "area_id", referencedColumnName = "id")
     var sensors: MutableList<Sensor>,
+    @Fetch(value = FetchMode.SUBSELECT)
+    @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = [CascadeType.ALL])
+    @JoinColumn(name = "area_id", referencedColumnName = "id")
+    var measures: MutableList<Measure>,
     @Fetch(value = FetchMode.SUBSELECT)
     @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = [CascadeType.ALL])
     @JoinColumn(name = "area_id", referencedColumnName = "id")
