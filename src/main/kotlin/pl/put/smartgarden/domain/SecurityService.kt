@@ -33,5 +33,5 @@ class SecurityService(
     fun isTokenRevoked(token: String): Boolean = revokedTokenRepository.existsById(token)
 
     fun getIdFromToken(token: String): Int =
-        Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).body["sub"].toString().toInt()
+        Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token.substring(7, token.length)).body["sub"].toString().toInt()
 }

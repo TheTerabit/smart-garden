@@ -29,7 +29,7 @@ class DeviceFacadeIrrigationIntegrationSpec extends IntegrationSpec {
                 new SensorRequest(SensorType.TEMPERATURE, "66666"),
                 new SensorRequest(SensorType.ILLUMINANCE, "77777"),
             ])
-        token = deviceFacade.createOrUpdateDevice(deviceRequest).accessToken
+        token = "Bearer " + deviceFacade.createOrUpdateDevice(deviceRequest).accessToken
         def measureTime = Instant.now()
         List<MeasureRequest> measures = [
             new MeasureRequest(measureTime, 3, 1000),
@@ -52,7 +52,7 @@ class DeviceFacadeIrrigationIntegrationSpec extends IntegrationSpec {
     def "should irrigate properly"() {
         given:
         areaSettingsRepository.save(areaSettings)
-        Area area = new Area(areaSettings, 1, [], [])
+        Area area = new Area(areaSettings, 1, [], [], [])
         areaRepository.save(area)
 
         def savedSensors = sensorRepository.findAllByDeviceId(1)
@@ -79,7 +79,7 @@ class DeviceFacadeIrrigationIntegrationSpec extends IntegrationSpec {
         given:
         def areaSettings = new AreaSettings(1, 3, TimeUnit.HOUR, 50, 1000, false, true, false)
         areaSettingsRepository.save(areaSettings)
-        Area area = new Area(areaSettings, 1, [], [])
+        Area area = new Area(areaSettings, 1, [], [], [])
         areaRepository.save(area)
 
         def savedSensors = sensorRepository.findAllByDeviceId(1)
