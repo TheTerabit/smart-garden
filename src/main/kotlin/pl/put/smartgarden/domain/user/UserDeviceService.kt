@@ -13,6 +13,7 @@ import pl.put.smartgarden.domain.device.SensorType
 import pl.put.smartgarden.domain.device.repository.AreaRepository
 import pl.put.smartgarden.domain.device.repository.AreaSettingsRepository
 import pl.put.smartgarden.domain.device.repository.DeviceRepository
+import pl.put.smartgarden.domain.device.repository.MeasureRepository
 import pl.put.smartgarden.domain.device.repository.SensorRepository
 import pl.put.smartgarden.domain.user.dto.request.AreaSettingsRequest
 import pl.put.smartgarden.domain.user.dto.request.CreateAreaRequest
@@ -28,7 +29,9 @@ import pl.put.smartgarden.domain.user.dto.response.SimpleAreaResponse
 import pl.put.smartgarden.domain.user.dto.response.SimpleAreaSensorResponse
 import pl.put.smartgarden.domain.user.dto.response.UserGeneralSettingsResponse
 import pl.put.smartgarden.domain.user.repository.UserRepository
+import java.time.Duration
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 @Transactional
 @Service
@@ -37,7 +40,8 @@ class UserDeviceService(
     val userRepository: UserRepository,
     val areaRepository: AreaRepository,
     val sensorRepository: SensorRepository,
-    val settingsRepository: AreaSettingsRepository
+    val settingsRepository: AreaSettingsRepository,
+    val measureRepository: MeasureRepository
 ) {
 
     /** Creates and saves device. */
@@ -77,45 +81,97 @@ class UserDeviceService(
     fun getAreaMeasures(userId: Int, areaId: Int, dateFrom: Instant?, dateTo: Instant?): AreaResponse {
         val device = getUserById(userId).device!!
 
-        val area = device.areas.firstOrNull { a -> a.id == areaId }
-            ?: throw SmartGardenException("Can't find area with given id: $areaId", HttpStatus.NOT_FOUND)
-
-        return getAreaMeasures(area, dateFrom, dateTo)
+        return getAreaMeasures(device, areaId, dateFrom, dateTo)
     }
 
     /** Retrieves measures for given area (only from active sensors). */
-    private fun getAreaMeasures(area: Area, dateFrom: Instant?, dateTo: Instant?): AreaResponse {
+    private fun getAreaMeasures(device: Device, areaId: Int, dateFrom: Instant?, dateTo: Instant?): AreaResponse {
         if (dateFrom != null && dateTo != null && dateFrom.isAfter(dateTo)) throw SmartGardenException("From cannot be after to!", HttpStatus.BAD_REQUEST)
 
-        val humidityMeasures = area.sensors
-            .filter { sensor -> sensor.isActive && sensor.type == SensorType.HUMIDITY }
-            .flatMap { sensor -> sensor.measures }
-            .filter { measure -> (dateFrom == null || measure.timestamp.isAfter(dateFrom)) && (dateTo == null || measure.timestamp.isBefore(dateTo)) }
-        val avgHumidity = area.sensors
-            .filter { sensor -> sensor.isActive && sensor.type == SensorType.HUMIDITY }
-            .map { sensor -> sensor.measures[sensor.measures.lastIndex].value }
-            .average()
-            .toInt()
+        val area = device.areas.firstOrNull { a -> a.id == areaId }
+            ?: throw SmartGardenException("Can't find area with given id: $areaId", HttpStatus.NOT_FOUND)
 
-        val illuminanceMeasures = area.sensors
-            .filter { sensor -> sensor.isActive && sensor.type == SensorType.ILLUMINANCE }
-            .flatMap { sensor -> sensor.measures }
-            .filter { measure -> (dateFrom == null || measure.timestamp.isAfter(dateFrom)) && (dateTo == null || measure.timestamp.isBefore(dateTo)) }
-        val avgIlluminance = area.sensors
-            .filter { sensor -> sensor.isActive && sensor.type == SensorType.ILLUMINANCE }
-            .map { sensor -> sensor.measures[sensor.measures.lastIndex].value }
-            .average()
-            .toInt()
+        var range = ChronoUnit.DAYS
+        if (dateFrom != null && dateTo != null) {
+            val seconds = Duration.between(dateFrom, dateTo).seconds
+            if (seconds <= 7200) {
+                range = ChronoUnit.MINUTES
+            } else if (seconds <= 604800) {
+                range = ChronoUnit.HOURS
+            }
+        }
 
-        val temperatureMeasures = area.sensors
-            .filter { sensor -> sensor.isActive && sensor.type == SensorType.TEMPERATURE }
+        val mapHumidity = mutableMapOf<Instant, MutableList<Int>>()
+        device.sensors
+            .filter { sensor -> sensor.areaId == areaId && sensor.isActive && sensor.type == SensorType.HUMIDITY }
             .flatMap { sensor -> sensor.measures }
             .filter { measure -> (dateFrom == null || measure.timestamp.isAfter(dateFrom)) && (dateTo == null || measure.timestamp.isBefore(dateTo)) }
-        val avgTemperature = area.sensors
-            .filter { sensor -> sensor.isActive && sensor.type == SensorType.TEMPERATURE }
-            .map { sensor -> sensor.measures[sensor.measures.lastIndex].value }
-            .average()
-            .toInt()
+            .forEach { measure ->
+                val timestamp = measure.timestamp.truncatedTo(range)
+                if (mapHumidity.containsKey(timestamp)) {
+                    mapHumidity[timestamp]?.add(measure.value)
+                } else {
+                    mapHumidity[timestamp] = mutableListOf(measure.value)
+                }
+            }
+
+        val humidityMeasures = mapHumidity
+            .map { (k, v) -> AreaSensorMeasuresResponse(k, v.average().toInt()) }
+            .sortedBy { m -> m.timestamp }
+            .toList()
+
+        var avgHumidity = 0
+        if (humidityMeasures.size != 0) {
+            avgHumidity = humidityMeasures[humidityMeasures.size - 1].value
+        }
+
+        val mapTemperature = mutableMapOf<Instant, MutableList<Int>>()
+        device.sensors
+            .filter { sensor -> sensor.areaId == areaId && sensor.isActive && sensor.type == SensorType.TEMPERATURE }
+            .flatMap { sensor -> sensor.measures }
+            .filter { measure -> (dateFrom == null || measure.timestamp.isAfter(dateFrom)) && (dateTo == null || measure.timestamp.isBefore(dateTo)) }
+            .forEach { measure ->
+                val timestamp = measure.timestamp.truncatedTo(range)
+                if (mapTemperature.containsKey(timestamp)) {
+                    mapTemperature[timestamp]?.add(measure.value)
+                } else {
+                    mapTemperature[timestamp] = mutableListOf(measure.value)
+                }
+            }
+
+        val temperatureMeasures = mapTemperature
+            .map { (k, v) -> AreaSensorMeasuresResponse(k, v.average().toInt()) }
+            .sortedBy { m -> m.timestamp }
+            .toList()
+
+        var avgTemperature = 0
+        if (temperatureMeasures.size != 0) {
+            avgTemperature = temperatureMeasures[temperatureMeasures.size - 1].value
+        }
+
+        val mapIlluminance = mutableMapOf<Instant, MutableList<Int>>()
+        device.sensors
+            .filter { sensor -> sensor.areaId == areaId && sensor.isActive && sensor.type == SensorType.ILLUMINANCE }
+            .flatMap { sensor -> sensor.measures }
+            .filter { measure -> (dateFrom == null || measure.timestamp.isAfter(dateFrom)) && (dateTo == null || measure.timestamp.isBefore(dateTo)) }
+            .forEach { measure ->
+                val timestamp = measure.timestamp.truncatedTo(range)
+                if (mapIlluminance.containsKey(timestamp)) {
+                    mapIlluminance[timestamp]?.add(measure.value)
+                } else {
+                    mapIlluminance[timestamp] = mutableListOf(measure.value)
+                }
+            }
+
+        val illuminanceMeasures = mapIlluminance
+            .map { (k, v) -> AreaSensorMeasuresResponse(k, v.average().toInt()) }
+            .sortedBy { m -> m.timestamp }
+            .toList()
+
+        var avgIlluminance = 0
+        if (illuminanceMeasures.size != 0) {
+            avgIlluminance = illuminanceMeasures[illuminanceMeasures.size - 1].value
+        }
 
         val irrigations = area.irrigations.sortedByDescending { it.timestamp }
         var nextWateringTime: Instant? = null
@@ -129,9 +185,9 @@ class UserDeviceService(
             temperature = avgTemperature,
             illuminance = avgIlluminance,
             nextWateringTime = nextWateringTime,
-            humidityMeasures = humidityMeasures.map { measure -> AreaSensorMeasuresResponse(measure.timestamp, measure.value) },
-            illuminanceMeasures = illuminanceMeasures.map { measure -> AreaSensorMeasuresResponse(measure.timestamp, measure.value) },
-            temperatureMeasures = temperatureMeasures.map { measure -> AreaSensorMeasuresResponse(measure.timestamp, measure.value) }
+            humidityMeasures = humidityMeasures,
+            illuminanceMeasures = illuminanceMeasures,
+            temperatureMeasures = temperatureMeasures
         )
     }
 
@@ -311,11 +367,12 @@ class UserDeviceService(
     /** Retrieves measures from all areas in given user device. */
     fun getAllAreasMeasures(userId: Int, dateFrom: Instant?, dateTo: Instant?): List<AreaResponse> {
         val user = getUserById(userId)
-        val areas = user.device?.areas!!
+        val device = user.device!!
+        val areas = device.areas!!
         val result = mutableListOf<AreaResponse>()
 
         for (area in areas) {
-            result.add(getAreaMeasures(area, dateFrom, dateTo))
+            result.add(getAreaMeasures(device, area.id, dateFrom, dateTo))
         }
 
         return result
@@ -353,7 +410,8 @@ class UserDeviceService(
             settings = areaSettings,
             deviceId = device.id,
             sensors = mutableListOf(),
-            irrigations = mutableListOf()
+            irrigations = mutableListOf(),
+            measures = mutableListOf()
         )
 
         areaRepository.save(area)
@@ -396,6 +454,8 @@ class UserDeviceService(
         if (area != null) {
             device.areas.remove(area)
             settingsRepository.delete(area.settings)
+            area.measures = mutableListOf()
+            measureRepository.removeByAreaId(area.id)
             areaRepository.delete(area)
         } else {
             throw SmartGardenException("Can't find area with given id: $areaId.", HttpStatus.NOT_FOUND)

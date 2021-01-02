@@ -6,3 +6,6 @@ import pl.put.smartgarden.domain.device.Measure
 
 @Repository
 interface MeasureRepository : JpaRepository<Measure, Int>
+{
+    fun removeByAreaId(areaId: Int)
+}
