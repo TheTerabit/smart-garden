@@ -10,7 +10,6 @@ import pl.put.smartgarden.domain.device.exception.NoSuchDeviceException
 import pl.put.smartgarden.domain.SecurityService
 import pl.put.smartgarden.domain.ServiceRole
 import pl.put.smartgarden.domain.device.SensorType.HUMIDITY
-import pl.put.smartgarden.domain.device.SensorType.ILLUMINANCE
 import pl.put.smartgarden.domain.device.SensorType.TEMPERATURE
 import pl.put.smartgarden.domain.device.dto.response.SensorResponse
 import java.time.Instant
@@ -91,7 +90,7 @@ class DeviceFacade(
             return 0
         }
 
-        return area.settings.strength + calculateExtraIrrigationAtTemperature(area) + calculateExtraIrrigationAtIlluminance(area)
+        return area.settings.strength + calculateExtraIrrigationAtTemperature(area)
     }
 
     private fun irrigationIsDisabled(area: Area) =
@@ -160,20 +159,5 @@ class DeviceFacade(
                 }
             }
         return (averageMeasures.average() - 20 * 0.1).roundToInt()// TODO - zmienić odpowiednio to równanie
-    }
-
-    private fun calculateExtraIrrigationAtIlluminance(area: Area): Int {
-        val averageMeasures = ArrayList<Int>()
-        area.sensors
-            .filter { it.type == ILLUMINANCE }
-            .forEach { measure ->
-                val measures = measure.measures.sortedByDescending { it.timestamp }
-                if (measures.size < 2) {
-                    return 0
-                } else {
-                    averageMeasures.add((measures[0].value + measures[1].value)/2)
-                }
-            }
-        return (averageMeasures.average() * 0.01).roundToInt()// TODO - zmienić odpowiednio to równanie
     }
 }
