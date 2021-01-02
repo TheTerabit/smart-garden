@@ -10,4 +10,5 @@ interface SensorRepository : JpaRepository<Sensor, Int> {
     fun findAllByDeviceId(deviceId: Int): List<Sensor>
     fun findAllByGuidIn(guids: List<String>): List<Sensor>
     fun findByGuid(guid: String): Optional<Sensor>
+    fun findAllByAreaId(areaId: String?): List<Sensor>
 }
