@@ -71,8 +71,8 @@ class DeviceFacadeIrrigationIntegrationSpec extends IntegrationSpec {
         where:
         areaSettings | expected
         new AreaSettings(1, 3, TimeUnit.HOUR, 50, 0, false, false, false) | 0
-        new AreaSettings(1, 3, TimeUnit.HOUR, 50, 0, false, false, true) | 76
-        new AreaSettings(1, 3, TimeUnit.HOUR, 50, 1000, false, true, false) | 76
+        new AreaSettings(1, 3, TimeUnit.HOUR, 50, 0, false, false, true) | 68
+        new AreaSettings(1, 3, TimeUnit.HOUR, 50, 1000, false, true, false) | 68
     }
 
     def "should irrigate one time only"() {

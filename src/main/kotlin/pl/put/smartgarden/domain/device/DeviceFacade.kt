@@ -10,10 +10,11 @@ import pl.put.smartgarden.domain.device.exception.NoSuchDeviceException
 import pl.put.smartgarden.domain.SecurityService
 import pl.put.smartgarden.domain.ServiceRole
 import pl.put.smartgarden.domain.device.SensorType.HUMIDITY
-import pl.put.smartgarden.domain.device.SensorType.ILLUMINANCE
 import pl.put.smartgarden.domain.device.SensorType.TEMPERATURE
 import pl.put.smartgarden.domain.device.dto.response.SensorResponse
 import java.time.Instant
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.roundToInt
 
 @Service
@@ -37,16 +38,23 @@ class DeviceFacade(
     }
 
     fun createMeasures(deviceMeasures: List<MeasureRequest>, token: String): List<MeasureResponse> {
-        return measureService.createMeasures(deviceMeasures)
-            .map { measure ->
-                MeasureResponse(
-                    measure.id,
-                    measure.timestamp,
-                    measure.sensorId,
-                    measure.value,
-                    sensorService.getUnitBySensorId(measure.sensorId)
-                )
-            }
+        val response = ArrayList<MeasureResponse>()
+        deviceMeasures.forEach {
+            response.add(createMeasure(it, token))
+        }
+        return response
+    }
+
+    private fun createMeasure(deviceMeasure: MeasureRequest, token: String): MeasureResponse {
+        val areaId = sensorService.getSensorById(deviceMeasure.sensorId).areaId
+        val measure = measureService.createMeasure(deviceMeasure, areaId)
+        return MeasureResponse(
+            measure.id,
+            measure.timestamp,
+            measure.sensorId,
+            measure.value,
+            sensorService.getUnitBySensorId(measure.sensorId)
+        )
     }
 
     fun getIrrigationDecisions(token: String): List<AreaDecisionResponse> {
@@ -91,7 +99,7 @@ class DeviceFacade(
             return 0
         }
 
-        return area.settings.strength + calculateExtraIrrigationAtTemperature(area) + calculateExtraIrrigationAtIlluminance(area)
+        return area.settings.strength + calculateExtraIrrigationAtTemperature(area)
     }
 
     private fun irrigationIsDisabled(area: Area) =
@@ -160,20 +168,5 @@ class DeviceFacade(
                 }
             }
         return (averageMeasures.average() - 20 * 0.1).roundToInt()// TODO - zmienić odpowiednio to równanie
-    }
-
-    private fun calculateExtraIrrigationAtIlluminance(area: Area): Int {
-        val averageMeasures = ArrayList<Int>()
-        area.sensors
-            .filter { it.type == ILLUMINANCE }
-            .forEach { measure ->
-                val measures = measure.measures.sortedByDescending { it.timestamp }
-                if (measures.size < 2) {
-                    return 0
-                } else {
-                    averageMeasures.add((measures[0].value + measures[1].value)/2)
-                }
-            }
-        return (averageMeasures.average() * 0.01).roundToInt()// TODO - zmienić odpowiednio to równanie
     }
 }

@@ -32,7 +32,8 @@ data class AreaSensorMeasuresResponse(
 data class SimpleAreaResponse(
     val id: Int,
     val settings: AreaSettingsResponse,
-    val sensors: List<SimpleAreaSensorResponse>
+    val sensors: List<SimpleAreaSensorResponse>,
+    val freeSensors: List<SimpleAreaSensorResponse>
 )
 
 data class SimpleAreaSensorResponse(
