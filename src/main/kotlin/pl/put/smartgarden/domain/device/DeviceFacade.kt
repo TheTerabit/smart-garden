@@ -38,8 +38,9 @@ class DeviceFacade(
 
     fun createMeasures(deviceMeasures: List<MeasureRequest>, token: String): List<MeasureResponse> {
         val measures = ArrayList<Measure>()
-        deviceMeasures.forEach {
-            measures.add(createMeasure(it, token));
+        val sensors = sensorService.getSensors()
+        deviceMeasures.parallelStream().forEach {
+            measures.add(createMeasure(it, sensors));
         }
         measureService.createMeasures(measures)
         return measures.map {
@@ -53,8 +54,8 @@ class DeviceFacade(
         }
     }
 
-    private fun createMeasure(deviceMeasure: MeasureRequest, token: String): Measure {
-        val areaId = sensorService.getSensorById(deviceMeasure.sensorId).areaId
+    private fun createMeasure(deviceMeasure: MeasureRequest, sensors: List<Sensor>): Measure {
+        val areaId = sensors.firstOrNull { it.id == deviceMeasure.sensorId }?.areaId
         return Measure(deviceMeasure.timestamp, deviceMeasure.value, deviceMeasure.sensorId, areaId)
     }
 
