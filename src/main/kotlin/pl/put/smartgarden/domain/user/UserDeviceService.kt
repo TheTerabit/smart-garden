@@ -101,32 +101,28 @@ class UserDeviceService(
             to = Instant.now().truncatedTo(ChronoUnit.DAYS).plus(1, ChronoUnit.DAYS)
         }
 
-        if (from != null && to != null) {
-            val seconds = Duration.between(from, to).seconds
-            if (seconds <= 86400) {
-                range = ChronoUnit.MINUTES
-            } else if (seconds <= 604800) {
-                range = ChronoUnit.HOURS
-            }
-            else
-            {
-                range = ChronoUnit.DAYS
-            }
+        val seconds = Duration.between(from, to).seconds
+        if (seconds <= 86400) {
+            range = ChronoUnit.MINUTES
+        } else if (seconds <= 604800) {
+            range = ChronoUnit.HOURS
+        }
+        else
+        {
+            range = ChronoUnit.DAYS
         }
 
         val mapHumidity = mutableMapOf<Instant, MutableList<Int>>()
-        device.sensors
-            .filter { sensor -> sensor.areaId == areaId && sensor.isActive && sensor.type == SensorType.HUMIDITY }
-            .flatMap { sensor -> sensor.measures }
-            .filter { measure -> (from == null || measure.timestamp.isAfter(from)) && (to == null || measure.timestamp.isBefore(to)) }
-            .forEach { measure ->
-                val timestamp = measure.timestamp.truncatedTo(range)
-                if (mapHumidity.containsKey(timestamp)) {
-                    mapHumidity[timestamp]?.add(measure.value)
-                } else {
-                    mapHumidity[timestamp] = mutableListOf(measure.value)
-                }
+
+        measureRepository.findMeasures(device.id, areaId, SensorType.HUMIDITY, from!!, to!!)
+        .forEach { measure ->
+            val timestamp = measure.timestamp.truncatedTo(range)
+            if (mapHumidity.containsKey(timestamp)) {
+                mapHumidity[timestamp]?.add(measure.value)
+            } else {
+                mapHumidity[timestamp] = mutableListOf(measure.value)
             }
+        }
 
         val humidityMeasures = mapHumidity
             .map { (k, v) -> AreaSensorMeasuresResponse(k, v.average().toInt()) }
@@ -139,10 +135,7 @@ class UserDeviceService(
         }
 
         val mapTemperature = mutableMapOf<Instant, MutableList<Int>>()
-        device.sensors
-            .filter { sensor -> sensor.areaId == areaId && sensor.isActive && sensor.type == SensorType.TEMPERATURE }
-            .flatMap { sensor -> sensor.measures }
-            .filter { measure -> (from == null || measure.timestamp.isAfter(from)) && (to == null || measure.timestamp.isBefore(to)) }
+        measureRepository.findMeasures(device.id, areaId, SensorType.TEMPERATURE, from, to)
             .forEach { measure ->
                 val timestamp = measure.timestamp.truncatedTo(range)
                 if (mapTemperature.containsKey(timestamp)) {
@@ -163,10 +156,7 @@ class UserDeviceService(
         }
 
         val mapIlluminance = mutableMapOf<Instant, MutableList<Int>>()
-        device.sensors
-            .filter { sensor -> sensor.areaId == areaId && sensor.isActive && sensor.type == SensorType.ILLUMINANCE }
-            .flatMap { sensor -> sensor.measures }
-            .filter { measure -> (from == null || measure.timestamp.isAfter(from)) && (to == null || measure.timestamp.isBefore(to)) }
+        measureRepository.findMeasures(device.id, areaId, SensorType.ILLUMINANCE, from, to)
             .forEach { measure ->
                 val timestamp = measure.timestamp.truncatedTo(range)
                 if (mapIlluminance.containsKey(timestamp)) {
