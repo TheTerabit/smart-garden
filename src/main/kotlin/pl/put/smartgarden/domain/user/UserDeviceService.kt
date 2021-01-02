@@ -344,7 +344,7 @@ class UserDeviceService(
     }
 
     /** Crate area. */
-    fun createArea(userId: Int, request: CreateAreaRequest): SimpleAreaResponse {
+    fun createArea(userId: Int, request: CreateAreaRequest?): SimpleAreaResponse {
         val user = getUserById(userId)
         val device = user.device!!
 
@@ -358,18 +358,20 @@ class UserDeviceService(
 
         areaRepository.save(area)
         areaSettings.areaId = area.id
-        setAreaSettings(request.settings, areaSettings)
+
+        setAreaSettings(request?.settings, areaSettings)
 
         area.irrigations.add(Irrigation(timestamp = Instant.now(), amount = 0, areaId = area.id))
         areaRepository.saveAndFlush(area)
 
-
-        for (sensorGuid in request.sensors) {
-            val sensor = device.sensors.firstOrNull { sensor -> sensor.guid == sensorGuid }
-            if (sensor != null) {
-                linkSensorToArea(area, sensor)
-            } else {
-                throw SmartGardenException("Can't find sensor with given guid: $sensorGuid", HttpStatus.NOT_FOUND)
+        request?.let {
+            for (sensorGuid in request.sensors) {
+                val sensor = device.sensors.firstOrNull { sensor -> sensor.guid == sensorGuid }
+                if (sensor != null) {
+                    linkSensorToArea(area, sensor)
+                } else {
+                    throw SmartGardenException("Can't find sensor with given guid: $sensorGuid", HttpStatus.NOT_FOUND)
+                }
             }
         }
 
