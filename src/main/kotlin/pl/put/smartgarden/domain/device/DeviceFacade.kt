@@ -13,7 +13,6 @@ import pl.put.smartgarden.domain.device.SensorType.HUMIDITY
 import pl.put.smartgarden.domain.device.SensorType.TEMPERATURE
 import pl.put.smartgarden.domain.device.dto.response.SensorResponse
 import java.time.Instant
-import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.roundToInt
 
@@ -38,23 +37,25 @@ class DeviceFacade(
     }
 
     fun createMeasures(deviceMeasures: List<MeasureRequest>, token: String): List<MeasureResponse> {
-        val response = ArrayList<MeasureResponse>()
+        val measures = ArrayList<Measure>()
         deviceMeasures.forEach {
-            response.add(createMeasure(it, token))
+            measures.add(createMeasure(it, token));
         }
-        return response
+        measureService.createMeasures(measures)
+        return measures.map {
+            MeasureResponse(
+                it.id,
+                it.timestamp,
+                it.sensorId,
+                it.value,
+                sensorService.getUnitBySensorId(it.sensorId)
+            )
+        }
     }
 
-    private fun createMeasure(deviceMeasure: MeasureRequest, token: String): MeasureResponse {
+    private fun createMeasure(deviceMeasure: MeasureRequest, token: String): Measure {
         val areaId = sensorService.getSensorById(deviceMeasure.sensorId).areaId
-        val measure = measureService.createMeasure(deviceMeasure, areaId)
-        return MeasureResponse(
-            measure.id,
-            measure.timestamp,
-            measure.sensorId,
-            measure.value,
-            sensorService.getUnitBySensorId(measure.sensorId)
-        )
+        return Measure(deviceMeasure.timestamp, deviceMeasure.value, deviceMeasure.sensorId, areaId)
     }
 
     fun getIrrigationDecisions(token: String): List<AreaDecisionResponse> {
