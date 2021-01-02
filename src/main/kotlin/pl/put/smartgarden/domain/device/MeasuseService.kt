@@ -6,9 +6,9 @@ import pl.put.smartgarden.domain.device.repository.MeasureRepository
 
 @Service
 class MeasuseService(val measureRepository: MeasureRepository) {
-    fun createMeasures(deviceMeasures: List<MeasureRequest>): List<Measure>  {
-        val measures = deviceMeasures.map { measure -> Measure(measure.timestamp, measure.value, measure.sensorId) }
-        measureRepository.saveAll(measures)
-        return measures
+    fun createMeasure(deviceMeasure: MeasureRequest, areaId: Int?): Measure  {
+        val measure = Measure(deviceMeasure.timestamp, deviceMeasure.value, deviceMeasure.sensorId, areaId)
+        measureRepository.save(measure)
+        return measure
     }
 }

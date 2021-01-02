@@ -51,4 +51,6 @@ class SensorService(val sensorRepository: SensorRepository) {
 
     fun getIrrigationSensorsByDeviceId(deviceId: Int): List<Sensor> =
         sensorRepository.findAllByDeviceId(deviceId).filter { sensor -> sensor.type == IRRIGATION }
+
+    fun getSensorById(id: Int) = sensorRepository.findById(id).get()
 }
