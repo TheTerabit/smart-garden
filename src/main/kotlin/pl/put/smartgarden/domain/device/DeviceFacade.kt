@@ -41,7 +41,7 @@ class DeviceFacade(
         val sensors = sensorService.getSensors()
         deviceMeasures.parallelStream().forEach {
             val measure = createMeasure(it, sensors)
-            //if (measure.areaId != null)
+            if (measure.areaId != null)
                 measures.add(measure)
         }
         measureService.createMeasures(measures)

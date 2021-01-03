@@ -12,6 +12,7 @@ import java.time.Instant
 class DeviceFacadeIrrigationIntegrationSpec extends IntegrationSpec {
 
     String token
+    Integer areaId
 
     def setup() {
         def device = new Device("123456789", 1, 20.0, 20.0)
@@ -31,36 +32,37 @@ class DeviceFacadeIrrigationIntegrationSpec extends IntegrationSpec {
             ])
         token = "Bearer " + deviceFacade.createOrUpdateDevice(deviceRequest).accessToken
 
-       // linkSensorToArea(userId, areaId, linkSensorRequest: LinkSensorRequest): SimpleAreaResponse {
-
+        def areaSettings = new AreaSettings(1, 0, TimeUnit.HOUR, 0, 0, false, false, false)
+        areaSettingsRepository.save(areaSettings)
+        Area area = new Area(areaSettings, 1, [], [], [])
+        areaRepository.save(area)
 
             def measureTime = Instant.now()
-        List<MeasureRequest> measures = [
-            new MeasureRequest(measureTime, 3, 1000),
-            new MeasureRequest(measureTime, 3, 800),
-            new MeasureRequest(measureTime, 2, 900),
-            new MeasureRequest(measureTime, 2, 700),
-            new MeasureRequest(measureTime, 4, 750),
-            new MeasureRequest(measureTime, 4, 750),
-            new MeasureRequest(measureTime, 5, 2000),
-            new MeasureRequest(measureTime, 5, 2000),
-            new MeasureRequest(measureTime, 6, 2000),
-            new MeasureRequest(measureTime, 6, 2000),
-            new MeasureRequest(measureTime, 7, 750),
-            new MeasureRequest(measureTime, 7, 750),
+        List<Measure> measures = [
+            new Measure(measureTime, 1000, 3, 1),
+            new Measure(measureTime, 800, 3, 1),
+            new Measure(measureTime, 900, 2, 1),
+            new Measure(measureTime, 700, 2, 1),
+            new Measure(measureTime, 750, 4, 1),
+            new Measure(measureTime, 750, 4, 1),
+            new Measure(measureTime, 20, 5, 1),
+            new Measure(measureTime, 20, 5, 1),
+            new Measure(measureTime, 20, 6, 1),
+            new Measure(measureTime, 20, 6, 1),
+            new Measure(measureTime, 750, 7, 1),
+            new Measure(measureTime, 750, 7, 1)
         ]
-        deviceFacade.createMeasures(measures, token)
+        measureRepository.saveAll(measures)
     }
 
     @Unroll
     def "should irrigate properly"() {
         given:
+        areaSettings.id = 1
         areaSettingsRepository.save(areaSettings)
-        Area area = new Area(areaSettings, 1, [], [], [])
-        areaRepository.save(area)
 
         def savedSensors = sensorRepository.findAllByDeviceId(1)
-        savedSensors.each {it.areaId = area.id}
+        savedSensors.each {it.areaId = 1}
         sensorRepository.saveAll(savedSensors)
 
         when:
