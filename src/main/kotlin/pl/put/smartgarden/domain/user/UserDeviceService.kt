@@ -342,7 +342,7 @@ class UserDeviceService(
     fun getAllAreasMeasures(userId: Int, dateFrom: Instant?, dateTo: Instant?): List<AreaResponse> {
         val user = getUserById(userId)
         val device = user.device!!
-        val areas = device.areas!!
+        val areas = device.areas
         val result = mutableListOf<AreaResponse>()
 
         for (area in areas) {
@@ -436,7 +436,7 @@ class UserDeviceService(
             device.areas.remove(area)
             settingsRepository.delete(area.settings)
             area.measures = mutableListOf()
-            measureRepository.removeByAreaId(area.id)
+            measureRepository.removeAllByAreaId(area.id)
             areaRepository.delete(area)
         } else {
             throw SmartGardenException("Can't find area with given id: $areaId.", HttpStatus.NOT_FOUND)
