@@ -41,7 +41,7 @@ class DeviceFacade(
         val sensors = sensorService.getSensors()
         deviceMeasures.parallelStream().forEach {
             val measure = createMeasure(it, sensors)
-            if (measure.areaId != null)
+            //if (measure.areaId != null)
                 measures.add(measure)
         }
         measureService.createMeasures(measures)
@@ -78,11 +78,13 @@ class DeviceFacade(
                 if (irrigationValue > 0) {
                     irrigationService.createIrrigation(area, irrigationValue)
                     areaDecisionResponse.add(AreaDecisionResponse(sensor.guid, irrigationValue))
+                    if (area.settings.irrigateNow) {
+                        areaService.noLongerIrrigateNow(area)
+                    }
                 } else {
                     areaDecisionResponse.add(AreaDecisionResponse(sensor.guid, 0))
                 }
             }
-
         irrigationSensors.filter { it.areaId == null }
             .forEach {
                 areaDecisionResponse.add(AreaDecisionResponse(it.guid, 0))
@@ -140,6 +142,7 @@ class DeviceFacade(
         }
 
         val averageMeasures = ArrayList<Int>()
+
         area.sensors
             .filter { it.type == HUMIDITY }
             .forEach { measure ->
