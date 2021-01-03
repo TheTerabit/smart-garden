@@ -12,7 +12,7 @@ class SecurityServiceTest extends Specification {
 
     def "should get correct id from token"() {
         given:
-        def token = securityService.generateJWTWithIdAndRole(1, ServiceRole.USER)
+        def token = "Bearer " + securityService.generateJWTWithIdAndRole(1, ServiceRole.USER)
 
         when:
         def result = securityService.getIdFromToken(token)

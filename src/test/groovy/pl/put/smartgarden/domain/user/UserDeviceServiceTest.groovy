@@ -15,8 +15,9 @@ class UserDeviceServiceTest extends Specification {
     def sensorRepository = Mock(SensorRepository)
     def settingsRepository = Mock(AreaSettingsRepository)
     def measuresRepository = Mock(MeasureRepository)
+    def irrigationRepository = Mock(IrrigationRepository)
 
-    def userDeviceService = new UserDeviceService(deviceRepository, userRepository, areaRepository, sensorRepository, settingsRepository, measuresRepository)
+    def userDeviceService = new UserDeviceService(deviceRepository, userRepository, areaRepository, sensorRepository, settingsRepository, measuresRepository, irrigationRepository)
 
     def "Should be able to create and save device "() {
         given:
@@ -122,6 +123,17 @@ class UserDeviceServiceTest extends Specification {
 
         device.areas = Arrays.asList(area1, area2)
         device.sensors = Arrays.asList(sensor1, sensor2, sensor3, sensor4)
+
+        measuresRepository.findMeasures(5645, 1, SensorType.HUMIDITY, Instant.ofEpochSecond(0), Instant.ofEpochSecond(99999999999)) >> sensor1.measures + sensor2.measures
+        measuresRepository.findMeasures(5645, 1, SensorType.ILLUMINANCE, Instant.ofEpochSecond(0), Instant.ofEpochSecond(99999999999)) >> sensor3.measures
+        measuresRepository.findMeasures(5645, 1, SensorType.TEMPERATURE, Instant.ofEpochSecond(0), Instant.ofEpochSecond(99999999999)) >> Collections.emptyList()
+
+        measuresRepository.findMeasures(5645, 2, SensorType.HUMIDITY, Instant.ofEpochSecond(1234550), Instant.ofEpochSecond(1234650)) >> Collections.emptyList()
+        measuresRepository.findMeasures(5645, 2, SensorType.ILLUMINANCE, Instant.ofEpochSecond(1234550), Instant.ofEpochSecond(1234650)) >> Collections.emptyList()
+        measuresRepository.findMeasures(5645, 2, SensorType.TEMPERATURE, Instant.ofEpochSecond(1234550), Instant.ofEpochSecond(1234650)) >> Collections.singletonList(sensor4.measures[1])
+
+        irrigationRepository.getLastIrrigation(1) >> Collections.singletonList(new Irrigation(Instant.ofEpochSecond(1234550), 1, 0))
+        irrigationRepository.getLastIrrigation(2) >> Collections.singletonList(new Irrigation(Instant.ofEpochSecond(1234560), 2, 0))
 
         when: "Retrieving all area measures from first area"
         def areaResponse = userDeviceService.getAreaMeasures(213, 1,  Instant.ofEpochSecond(0), Instant.ofEpochSecond(99999999999))
