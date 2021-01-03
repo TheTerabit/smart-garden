@@ -113,12 +113,14 @@ class UserDeviceServiceTest extends Specification {
         def irrigation1 = new Irrigation(Instant.ofEpochSecond(1234400), 1, 500)
         def area1 = new Area(new AreaSettings(), 5645, Arrays.asList(sensor1, sensor2, sensor3), sensor1.measures + sensor2.measures + sensor3.measures, Arrays.asList(irrigation1))
         area1.id = 1
+        area1.settings.areaId = area1.id
         sensor1.areaId = 1
         sensor2.areaId = 1
         sensor3.areaId = 1
 
         def area2 = new Area(new AreaSettings(), 5645, Arrays.asList(sensor4), sensor4.measures, Collections.emptyList())
         area2.id = 2
+        area2.settings.areaId = area2.id
         sensor4.areaId = 2
 
         device.areas = Arrays.asList(area1, area2)
@@ -135,8 +137,10 @@ class UserDeviceServiceTest extends Specification {
         irrigationRepository.getLastIrrigation(1) >> Collections.singletonList(new Irrigation(Instant.ofEpochSecond(1234550), 1, 0))
         irrigationRepository.getLastIrrigation(2) >> Collections.singletonList(new Irrigation(Instant.ofEpochSecond(1234560), 2, 0))
 
+        sensorRepository.findAllByAreaIdAndDeviceId(null, 5645) >> Collections.emptyList()
+
         when: "Retrieving all area measures from first area"
-        def areaResponse = userDeviceService.getAreaMeasures(213, 1,  Instant.ofEpochSecond(0), Instant.ofEpochSecond(99999999999))
+        def areaResponse = userDeviceService.getAreaMeasures(213, 1, Instant.ofEpochSecond(0), Instant.ofEpochSecond(99999999999))
 
         then: "Only measures from sensors connected to first area should be retrieved"
         areaResponse.id == 1
