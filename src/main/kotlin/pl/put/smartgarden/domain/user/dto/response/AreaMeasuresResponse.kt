@@ -35,6 +35,7 @@ data class AreaSensorMeasuresResponse(
 data class SimpleAreaResponse(
     val id: Int,
     val settings: AreaSettingsResponse,
+    val nextWateringTime: Instant?,
     val sensors: List<SimpleAreaSensorResponse>,
     val freeSensors: List<SimpleAreaSensorResponse>
 )
