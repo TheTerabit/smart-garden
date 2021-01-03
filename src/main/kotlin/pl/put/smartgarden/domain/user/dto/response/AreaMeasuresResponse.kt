@@ -3,12 +3,15 @@ package pl.put.smartgarden.domain.user.dto.response
 import pl.put.smartgarden.domain.device.TimeUnit
 import java.time.Instant
 
-data class AreaResponse(
+data class AreaMeasuresResponse(
     val id: Int,
     val nextWateringTime: Instant?,
     val temperature: Int,
     val humidity: Int,
     val illuminance: Int,
+    val settings: AreaSettingsResponse,
+    val sensors: List<SimpleAreaSensorResponse>,
+    val freeSensors: List<SimpleAreaSensorResponse>,
     var temperatureMeasures: List<AreaSensorMeasuresResponse>,
     var illuminanceMeasures: List<AreaSensorMeasuresResponse>,
     var humidityMeasures: List<AreaSensorMeasuresResponse>

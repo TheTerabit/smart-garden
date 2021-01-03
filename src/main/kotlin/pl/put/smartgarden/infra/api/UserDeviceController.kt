@@ -22,7 +22,7 @@ import pl.put.smartgarden.domain.user.dto.request.CreateAreaRequest
 import pl.put.smartgarden.domain.user.dto.request.LinkSensorRequest
 import pl.put.smartgarden.domain.user.dto.request.SensorUpdateRequest
 import pl.put.smartgarden.domain.user.dto.response.AreaIrrigationResponse
-import pl.put.smartgarden.domain.user.dto.response.AreaResponse
+import pl.put.smartgarden.domain.user.dto.response.AreaMeasuresResponse
 import pl.put.smartgarden.domain.user.dto.response.AreaSettingsResponse
 import pl.put.smartgarden.domain.user.dto.response.SensorResponse
 import pl.put.smartgarden.domain.user.dto.response.SimpleAreaResponse
@@ -42,7 +42,7 @@ class UserDeviceController(
     fun getAllAreasMeasures(
         @ApiParam(hidden = true) @RequestAttribute("id") userId: Int,
         @RequestParam("from", required = false) from: Instant?,
-        @RequestParam("to", required = false) to: Instant?): List<AreaResponse> {
+        @RequestParam("to", required = false) to: Instant?): List<AreaMeasuresResponse> {
         return userDeviceService.getAllAreasMeasures(userId, from, to)
     }
 
@@ -54,7 +54,7 @@ class UserDeviceController(
         @PathVariable("areaId") areaId: Int,
         @RequestParam("from", required = false) from: Instant?,
         @RequestParam("to", required = false) to: Instant?
-    ): AreaResponse =
+    ): AreaMeasuresResponse =
         userDeviceService.getAreaMeasures(userId, areaId, from, to)
 
     @GetMapping("/areas/settings")
