@@ -12,8 +12,8 @@ import java.time.Instant
 @Repository
 interface MeasureRepository : JpaRepository<Measure, Int>
 {
-    @Query("SELECT m FROM Measure m WHERE m.sensorId IN (SELECT s.id FROM Sensor s WHERE s.deviceId = :deviceId AND s.areaId = :areaId AND s.isActive = true AND s.type = :type) AND m.timestamp > :from AND m.timestamp <= :to")
-    fun findMeasures(@Param("deviceId") deviceId: Int, @Param("areaId") areaId: Int, @Param("type") type: SensorType, @Param("from") from: Instant, @Param("to") to: Instant): Collection<Measure>
+    @Query("SELECT m FROM Measure m WHERE m.sensorId IN (SELECT s.id FROM Sensor s WHERE s.deviceId = :deviceId AND s.areaId = :areaId AND s.isActive = true AND s.type = :type) AND m.timestamp > :from AND m.timestamp <= :to ORDER BY m.timestamp")
+    fun findMeasures(@Param("deviceId") deviceId: Int, @Param("areaId") areaId: Int, @Param("type") type: SensorType, @Param("from") from: Instant, @Param("to") to: Instant): List<Measure>
 
     @Modifying
     @Query("DELETE FROM Measure m WHERE m.areaId = :areaId")
