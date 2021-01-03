@@ -57,8 +57,11 @@ class DeviceFacade(
     }
 
     private fun createMeasure(deviceMeasure: MeasureRequest, sensors: List<Sensor>): Measure {
-        val areaId = sensors.filter { it.id == deviceMeasure.sensorId}.firstOrNull { it.id == deviceMeasure.sensorId }?.areaId
-        return Measure(deviceMeasure.timestamp, deviceMeasure.value, deviceMeasure.sensorId, areaId)
+        val sensor = sensors.filter { it.id == deviceMeasure.sensorId}.firstOrNull { it.id == deviceMeasure.sensorId }
+        if (sensor?.type == TEMPERATURE)
+            return Measure(deviceMeasure.timestamp, deviceMeasure.value / 100, deviceMeasure.sensorId, sensor.areaId)
+        else
+            return Measure(deviceMeasure.timestamp, deviceMeasure.value, deviceMeasure.sensorId, sensor?.areaId)
     }
 
     fun getIrrigationDecisions(token: String): List<AreaDecisionResponse> {
