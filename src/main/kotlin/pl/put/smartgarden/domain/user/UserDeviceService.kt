@@ -424,6 +424,12 @@ class UserDeviceService(
     }
 
     private fun createSimpleAreaResponse(area: Area, deviceId: Int): SimpleAreaResponse {
+        val irrigations = irrigationRepository.getLastIrrigation(area.id)
+        var nextWateringTime: Instant? = null
+        if (irrigations.isNotEmpty()) {
+            nextWateringTime = irrigations[0].timestamp.plusSeconds(1L * area.settings.frequencyValue * area.settings.frequencyUnit.inSeconds)
+        }
+
         return SimpleAreaResponse(
             area.id,
             AreaSettingsResponse(
@@ -435,6 +441,7 @@ class UserDeviceService(
                 area.settings.strength,
                 area.settings.threshhold
             ),
+            nextWateringTime,
             area.sensors.map { s -> SimpleAreaSensorResponse(s.guid, s.type.name, s.type.unit, s.isActive) },
             sensorRepository.findAllByAreaIdAndDeviceId(null, deviceId).map { s -> SimpleAreaSensorResponse(s.guid, s.type.name, s.type.unit, s.isActive) }
         )
