@@ -40,7 +40,9 @@ class DeviceFacade(
         val measures = ArrayList<Measure>()
         val sensors = sensorService.getSensors()
         deviceMeasures.parallelStream().forEach {
-            measures.add(createMeasure(it, sensors));
+            val measure = createMeasure(it, sensors)
+            if (measure.areaId != null)
+                measures.add(measure)
         }
         measureService.createMeasures(measures)
         return measures.map {
@@ -55,7 +57,7 @@ class DeviceFacade(
     }
 
     private fun createMeasure(deviceMeasure: MeasureRequest, sensors: List<Sensor>): Measure {
-        val areaId = sensors.firstOrNull { it.id == deviceMeasure.sensorId }?.areaId
+        val areaId = sensors.filter { it.id == deviceMeasure.sensorId}.firstOrNull { it.id == deviceMeasure.sensorId }?.areaId
         return Measure(deviceMeasure.timestamp, deviceMeasure.value, deviceMeasure.sensorId, areaId)
     }
 
