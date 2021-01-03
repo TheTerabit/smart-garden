@@ -13,6 +13,7 @@ import pl.put.smartgarden.domain.device.SensorType
 import pl.put.smartgarden.domain.device.repository.AreaRepository
 import pl.put.smartgarden.domain.device.repository.AreaSettingsRepository
 import pl.put.smartgarden.domain.device.repository.DeviceRepository
+import pl.put.smartgarden.domain.device.repository.IrrigationRepository
 import pl.put.smartgarden.domain.device.repository.MeasureRepository
 import pl.put.smartgarden.domain.device.repository.SensorRepository
 import pl.put.smartgarden.domain.user.dto.request.AreaSettingsRequest
@@ -41,7 +42,8 @@ class UserDeviceService(
     val areaRepository: AreaRepository,
     val sensorRepository: SensorRepository,
     val settingsRepository: AreaSettingsRepository,
-    val measureRepository: MeasureRepository
+    val measureRepository: MeasureRepository,
+    val irrigationRepository: IrrigationRepository
 ) {
 
     /** Creates and saves device. */
@@ -91,8 +93,7 @@ class UserDeviceService(
         val area = device.areas.firstOrNull { a -> a.id == areaId }
             ?: throw SmartGardenException("Can't find area with given id: $areaId", HttpStatus.NOT_FOUND)
 
-        var range = ChronoUnit.MINUTES
-
+        var range: ChronoUnit
         var from = dateFrom
         var to = dateTo
         if (from == null && to == null)
@@ -112,74 +113,22 @@ class UserDeviceService(
             range = ChronoUnit.DAYS
         }
 
-        val mapHumidity = mutableMapOf<Instant, MutableList<Int>>()
+        val humidityPair = getMeasures(device, areaId, from, to, range, SensorType.HUMIDITY)
+        val humidityMeasures = humidityPair.first
+        var avgHumidity = humidityPair.second
 
-        measureRepository.findMeasures(device.id, areaId, SensorType.HUMIDITY, from!!, to!!)
-        .forEach { measure ->
-            val timestamp = measure.timestamp.truncatedTo(range)
-            if (mapHumidity.containsKey(timestamp)) {
-                mapHumidity[timestamp]?.add(measure.value)
-            } else {
-                mapHumidity[timestamp] = mutableListOf(measure.value)
-            }
-        }
+        val temperaturePair = getMeasures(device, areaId, from, to, range, SensorType.TEMPERATURE)
+        val temperatureMeasures = temperaturePair.first
+        var avgTemperature = temperaturePair.second
 
-        val humidityMeasures = mapHumidity
-            .map { (k, v) -> AreaSensorMeasuresResponse(k, v.average().toInt()) }
-            .sortedBy { m -> m.timestamp }
-            .toList()
+        val illuminancePair = getMeasures(device, areaId, from, to, range, SensorType.ILLUMINANCE)
+        val illuminanceMeasures = illuminancePair.first
+        var avgIlluminance = illuminancePair.second
 
-        var avgHumidity = 0
-        if (humidityMeasures.isNotEmpty()) {
-            avgHumidity = humidityMeasures[humidityMeasures.size - 1].value
-        }
-
-        val mapTemperature = mutableMapOf<Instant, MutableList<Int>>()
-        measureRepository.findMeasures(device.id, areaId, SensorType.TEMPERATURE, from, to)
-            .forEach { measure ->
-                val timestamp = measure.timestamp.truncatedTo(range)
-                if (mapTemperature.containsKey(timestamp)) {
-                    mapTemperature[timestamp]?.add(measure.value)
-                } else {
-                    mapTemperature[timestamp] = mutableListOf(measure.value)
-                }
-            }
-
-        val temperatureMeasures = mapTemperature
-            .map { (k, v) -> AreaSensorMeasuresResponse(k, v.average().toInt()) }
-            .sortedBy { m -> m.timestamp }
-            .toList()
-
-        var avgTemperature = 0
-        if (temperatureMeasures.isNotEmpty()) {
-            avgTemperature = temperatureMeasures[temperatureMeasures.size - 1].value
-        }
-
-        val mapIlluminance = mutableMapOf<Instant, MutableList<Int>>()
-        measureRepository.findMeasures(device.id, areaId, SensorType.ILLUMINANCE, from, to)
-            .forEach { measure ->
-                val timestamp = measure.timestamp.truncatedTo(range)
-                if (mapIlluminance.containsKey(timestamp)) {
-                    mapIlluminance[timestamp]?.add(measure.value)
-                } else {
-                    mapIlluminance[timestamp] = mutableListOf(measure.value)
-                }
-            }
-
-        val illuminanceMeasures = mapIlluminance
-            .map { (k, v) -> AreaSensorMeasuresResponse(k, v.average().toInt()) }
-            .sortedBy { m -> m.timestamp }
-            .toList()
-
-        var avgIlluminance = 0
-        if (illuminanceMeasures.isNotEmpty()) {
-            avgIlluminance = illuminanceMeasures[illuminanceMeasures.size - 1].value
-        }
-
-        val irrigations = area.irrigations.sortedByDescending { it.timestamp }
+        val irrigations = irrigationRepository.getLastIrrigation(areaId)
         var nextWateringTime: Instant? = null
         if (irrigations.isNotEmpty()) {
-            nextWateringTime = irrigations[0].timestamp
+            nextWateringTime = irrigations[0].timestamp.plusSeconds(1L * area.settings.frequencyValue * area.settings.frequencyUnit.inSeconds)
         }
 
         return AreaResponse(
@@ -192,6 +141,30 @@ class UserDeviceService(
             illuminanceMeasures = illuminanceMeasures,
             temperatureMeasures = temperatureMeasures
         )
+    }
+
+    private fun getMeasures(device: Device, areaId: Int, from: Instant?, to: Instant?, range: ChronoUnit, sensorType: SensorType): Pair<List<AreaSensorMeasuresResponse>, Int> {
+        val tmpMap = mutableMapOf<Instant, MutableList<Int>>()
+        measureRepository.findMeasures(device.id, areaId, sensorType, from!!, to!!)
+            .forEach { measure ->
+                val timestamp = measure.timestamp.truncatedTo(range)
+                if (tmpMap.containsKey(timestamp)) {
+                    tmpMap[timestamp]?.add(measure.value)
+                } else {
+                    tmpMap[timestamp] = mutableListOf(measure.value)
+                }
+            }
+
+        val measures = tmpMap
+            .map { (k, v) -> AreaSensorMeasuresResponse(k, v.average().toInt()) }
+            .sortedBy { m -> m.timestamp }
+            .toList()
+
+        var avgLastMeasure = 0
+        if (measures.isNotEmpty()) {
+            avgLastMeasure = measures[measures.size - 1].value
+        }
+        return Pair(measures, avgLastMeasure)
     }
 
     /** Retrieves settings of all areas. */
