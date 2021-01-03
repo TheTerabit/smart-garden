@@ -10,7 +10,7 @@ class WeatherService(
     val weatherClient: WeatherClient
 ) {
     fun isGoingToRain(device: Device): Boolean {
-        val weatherFromDb: Weather? = weatherRepository.findFirstByDeviceId(device.id)
+        val weatherFromDb: Weather? = weatherRepository.findByDeviceId(device.id).orElse(null)
 
         if (isWeatherForecastUpToDate(weatherFromDb)) {
             return weatherFromDb!!.isGoingToRain
