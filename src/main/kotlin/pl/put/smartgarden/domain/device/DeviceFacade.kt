@@ -1,19 +1,20 @@
 package pl.put.smartgarden.domain.device
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import pl.put.smartgarden.domain.SecurityService
+import pl.put.smartgarden.domain.ServiceRole
+import pl.put.smartgarden.domain.device.SensorType.HUMIDITY
+import pl.put.smartgarden.domain.device.SensorType.TEMPERATURE
 import pl.put.smartgarden.domain.device.dto.request.DeviceRequest
 import pl.put.smartgarden.domain.device.dto.request.MeasureRequest
 import pl.put.smartgarden.domain.device.dto.response.AreaDecisionResponse
 import pl.put.smartgarden.domain.device.dto.response.DeviceResponse
 import pl.put.smartgarden.domain.device.dto.response.MeasureResponse
-import pl.put.smartgarden.domain.device.exception.NoSuchDeviceException
-import pl.put.smartgarden.domain.SecurityService
-import pl.put.smartgarden.domain.ServiceRole
-import pl.put.smartgarden.domain.device.SensorType.HUMIDITY
-import pl.put.smartgarden.domain.device.SensorType.TEMPERATURE
 import pl.put.smartgarden.domain.device.dto.response.SensorResponse
+import pl.put.smartgarden.domain.device.exception.NoSuchDeviceException
 import java.time.Instant
-import kotlin.collections.ArrayList
 import kotlin.math.roundToInt
 
 @Service
@@ -26,6 +27,10 @@ class DeviceFacade(
     val irrigationService: IrrigationService,
     val weatherService: WeatherService
 ) {
+    companion object {
+        val logger = LoggerFactory.getLogger(DeviceFacade.javaClass)
+    }
+
     fun createOrUpdateDevice(deviceRequest: DeviceRequest): DeviceResponse {
         val device = deviceService.getDeviceByGuid(deviceRequest.guid)
         device ?: throw NoSuchDeviceException()
@@ -120,7 +125,7 @@ class DeviceFacade(
         if (area.settings.irrigateNow) {
             return true
         }
-
+        logger.error("Area irrigation size {}", area.irrigations.size)
         val irrigations = area.irrigations
         if (irrigations.size == 0) {
             return true
@@ -129,7 +134,7 @@ class DeviceFacade(
         irrigations.sortedByDescending { it.timestamp }
         val lastIrrigation = irrigations[0]
         val startIrrigationAt = calculateIrrigationReadyTime(lastIrrigation, area)
-
+        logger.error("Calculated start irrigation at: {}", startIrrigationAt)
         return Instant.now().isAfter(startIrrigationAt)
     }
 
