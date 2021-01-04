@@ -78,6 +78,7 @@ class DeviceFacade(
         irrigationSensors.filter { sensor -> sensor.areaId != null }
             .parallelStream()
             .forEach { sensor ->
+                logger.error("Irrigation decision for sensor: {}", sensor.id)
                 val area = areas.first {it.id == sensor.areaId!!}
                 val irrigationValue = calculateIrrigation(area, isGoingToRain)
                 if (irrigationValue > 0) {
@@ -133,6 +134,10 @@ class DeviceFacade(
 
         irrigations.sortedByDescending { it.timestamp }
         val lastIrrigation = irrigations[0]
+        logger.error("Last irrigation at: {}", lastIrrigation)
+        logger.error("First irrigation at: {}", irrigations.last().timestamp)
+        logger.error("Now: {}", Instant.now())
+
         val startIrrigationAt = calculateIrrigationReadyTime(lastIrrigation, area)
         logger.error("Calculated start irrigation at: {}", startIrrigationAt)
         return Instant.now().isAfter(startIrrigationAt)
