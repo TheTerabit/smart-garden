@@ -129,6 +129,10 @@ class UserDeviceService(
         var nextWateringTime: Instant? = null
         if (irrigations.isNotEmpty()) {
             nextWateringTime = irrigations[0].timestamp.plusSeconds(1L * area.settings.frequencyValue * area.settings.frequencyUnit.inSeconds)
+            if (nextWateringTime.isBefore(Instant.now()))
+            {
+                nextWateringTime = null
+            }
         }
 
         return AreaMeasuresResponse(
@@ -406,7 +410,6 @@ class UserDeviceService(
 
         setAreaSettings(request?.settings, areaSettings)
 
-        area.irrigations.add(Irrigation(timestamp = Instant.now(), amount = 0, areaId = area.id))
         areaRepository.saveAndFlush(area)
 
         request?.let {
