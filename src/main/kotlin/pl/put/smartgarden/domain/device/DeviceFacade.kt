@@ -133,7 +133,7 @@ class DeviceFacade(
         }
 
         irrigations.sortedByDescending { it.timestamp }
-        val lastIrrigation = irrigations[0]
+        val lastIrrigation = irrigations.last()
         logger.error("Last irrigation at: {}", lastIrrigation)
         logger.error("First irrigation at: {}", irrigations.last().timestamp)
         logger.error("Now: {}", Instant.now())
