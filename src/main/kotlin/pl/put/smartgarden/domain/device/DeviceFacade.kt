@@ -1,6 +1,5 @@
 package pl.put.smartgarden.domain.device
 
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import pl.put.smartgarden.domain.SecurityService

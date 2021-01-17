@@ -10,6 +10,7 @@ import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
+import javax.persistence.GenerationType
 import javax.persistence.Id
 import javax.persistence.JoinColumn
 import javax.persistence.OneToMany
@@ -112,9 +113,8 @@ class Measure(
 {
     @Id
     @Column(name = "id")
-    @GeneratedValue(generator="increment")
-    @GenericGenerator(name="increment", strategy = "increment")
-    var id: Int = 0
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    var id: Int? = null
 
     override fun equals(other: Any?): Boolean =
         (other is Measure)
