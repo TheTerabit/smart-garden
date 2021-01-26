@@ -32,11 +32,11 @@ class Device(
     @GenericGenerator(name="increment", strategy = "increment")
     var id: Int = 0
     @Fetch(value = FetchMode.SUBSELECT)
-    @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = [CascadeType.ALL])
+    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = [CascadeType.ALL])
     @JoinColumn(name = "device_id", referencedColumnName = "id")
     var sensors: MutableList<Sensor> = Collections.emptyList()
     @Fetch(value = FetchMode.SUBSELECT)
-    @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = [CascadeType.ALL])
+    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = [CascadeType.ALL])
     @JoinColumn(name = "device_id", referencedColumnName = "id")
     var areas: MutableList<Area> = Collections.emptyList()
 
@@ -82,7 +82,7 @@ class Sensor(
     @GenericGenerator(name="increment", strategy = "increment")
     var id: Int = 0
     var isActive: Boolean = true
-    @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = [CascadeType.ALL])
+    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = [CascadeType.ALL])
     @JoinColumn(name = "sensor_id", referencedColumnName = "id")
     var measures: MutableList<Measure> = Collections.emptyList()
     @Column(name = "area_id")
@@ -135,15 +135,15 @@ class Area(
     @Column(name = "device_id")
     var deviceId: Int,
     @Fetch(value = FetchMode.SUBSELECT)
-    @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = [CascadeType.ALL])
+    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = [CascadeType.ALL])
     @JoinColumn(name = "area_id", referencedColumnName = "id")
     var sensors: MutableList<Sensor>,
     @Fetch(value = FetchMode.SUBSELECT)
-    @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = [CascadeType.ALL])
+    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = [CascadeType.ALL])
     @JoinColumn(name = "area_id", referencedColumnName = "id")
     var measures: MutableList<Measure>,
     @Fetch(value = FetchMode.SUBSELECT)
-    @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = [CascadeType.ALL])
+    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = [CascadeType.ALL])
     @JoinColumn(name = "area_id", referencedColumnName = "id")
     var irrigations: MutableList<Irrigation>
 ) {
