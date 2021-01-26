@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import pl.put.smartgarden.domain.SecurityService
 import pl.put.smartgarden.domain.ServiceRole
 import pl.put.smartgarden.domain.device.SensorType.HUMIDITY
+import pl.put.smartgarden.domain.device.SensorType.ILLUMINANCE
 import pl.put.smartgarden.domain.device.SensorType.TEMPERATURE
 import pl.put.smartgarden.domain.device.dto.request.DeviceRequest
 import pl.put.smartgarden.domain.device.dto.request.MeasureRequest
@@ -14,6 +15,7 @@ import pl.put.smartgarden.domain.device.dto.response.MeasureResponse
 import pl.put.smartgarden.domain.device.dto.response.SensorResponse
 import pl.put.smartgarden.domain.device.exception.NoSuchDeviceException
 import java.time.Instant
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 @Service
@@ -111,6 +113,10 @@ class DeviceFacade(
             return 0
         }
 
+        if (isIlluminanceTooHigh(area)) {
+            return 0
+        }
+
         if (isGoingToRain(area, isGoingToRain)) {
             return 0
         }
@@ -188,6 +194,22 @@ class DeviceFacade(
                     averageMeasures.add((measures[0].value + measures[1].value) / 2)
                 }
             }
-        return (averageMeasures.average() - 20 * 0.1).roundToInt()// TODO - zmienić odpowiednio to równanie
+
+        return ((max(averageMeasures.average(), 0.0) - 14) * 0.001 * area.settings.strength).roundToInt()
+    }
+
+    private fun isIlluminanceTooHigh(area: Area): Boolean {
+        val averageMeasures = ArrayList<Int>()
+        area.sensors
+            .filter { it.type == ILLUMINANCE }
+            .forEach { measure ->
+                val measures = measure.measures.sortedByDescending { it.timestamp }
+                if (measures.size < 2) {
+                    return true
+                } else {
+                    averageMeasures.add((measures[0].value + measures[1].value)/2)
+                }
+            }
+        return (averageMeasures.average()).roundToInt() > 10000
     }
 }

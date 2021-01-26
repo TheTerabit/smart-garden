@@ -45,10 +45,10 @@ class DeviceFacadeIrrigationIntegrationSpec extends IntegrationSpec {
             new Measure(measureTime, 700, 2, 1),
             new Measure(measureTime, 750, 4, 1),
             new Measure(measureTime, 750, 4, 1),
-            new Measure(measureTime, 20, 5, 1),
-            new Measure(measureTime, 20, 5, 1),
-            new Measure(measureTime, 20, 6, 1),
-            new Measure(measureTime, 20, 6, 1),
+            new Measure(measureTime, 30, 5, 1),
+            new Measure(measureTime, 30, 5, 1),
+            new Measure(measureTime, 30, 6, 1),
+            new Measure(measureTime, 30, 6, 1),
             new Measure(measureTime, 750, 7, 1),
             new Measure(measureTime, 750, 7, 1)
         ]
@@ -77,8 +77,8 @@ class DeviceFacadeIrrigationIntegrationSpec extends IntegrationSpec {
         where:
         areaSettings | expected
         new AreaSettings(1, 3, TimeUnit.HOUR, 50, 0, false, false, false) | 0
-        new AreaSettings(1, 3, TimeUnit.HOUR, 50, 0, false, false, true) | 68
-        new AreaSettings(1, 3, TimeUnit.HOUR, 50, 1000, false, true, false) | 68
+        new AreaSettings(1, 3, TimeUnit.HOUR, 300, 0, false, false, true) | 305
+        new AreaSettings(1, 3, TimeUnit.HOUR, 120, 1000, false, true, false) | 122
     }
 
     def "should irrigate one time only"() {
