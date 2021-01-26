@@ -98,19 +98,15 @@ class UserDeviceService(
         var to = dateTo
         if (from == null && to == null)
         {
-            from = Instant.now().truncatedTo(ChronoUnit.DAYS)
+            from = Instant.now().truncatedTo(ChronoUnit.DAYS).minus(30, ChronoUnit.DAYS)
             to = Instant.now().truncatedTo(ChronoUnit.DAYS).plus(1, ChronoUnit.DAYS)
         }
 
         val seconds = Duration.between(from, to).seconds
-        if (seconds <= 86400) {
-            range = ChronoUnit.MINUTES
-        } else if (seconds <= 604800) {
-            range = ChronoUnit.HOURS
-        }
-        else
-        {
-            range = ChronoUnit.DAYS
+        range = if (seconds <= 604800) {
+            ChronoUnit.MINUTES
+        } else {
+            ChronoUnit.HOURS
         }
 
         val humidityPair = getMeasures(device, areaId, from, to, range, SensorType.HUMIDITY)
@@ -371,10 +367,9 @@ class UserDeviceService(
     fun getAreasInfo(userId: Int): List<SimpleAreaResponse> {
         val result = mutableListOf<SimpleAreaResponse>()
 
-        val device = getUserById(userId).device!!
-        val areas = device.areas
+        val areas = areaRepository.getUserAreas(userId)
         for (area in areas) {
-            result.add(createSimpleAreaResponse(area, device.id))
+            result.add(createSimpleAreaResponse(area, deviceRepository.getByUserId(userId).id))
         }
 
         return result
